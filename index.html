@@ -2,8 +2,14 @@
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poker Cash Game Bankroll & Level Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Poker Bankroll & Live Table Tracker</title>
+    <!-- iPhone Web App Capable -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Bankroll Tracker">
+    <link rel="apple-touch-icon" href="https://placehold.co/180x180/059669/ffffff?text=♠+BRM">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -12,6 +18,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -38,56 +45,61 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0b0f17;
+            background-color: #080c14;
             color: #f1f5f9;
+            -webkit-tap-highlight-color: transparent;
         }
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
         }
         ::-webkit-scrollbar-track {
-            background: #111827;
+            background: #0f172a;
         }
         ::-webkit-scrollbar-thumb {
-            background: #374151;
+            background: #334155;
             border-radius: 3px;
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #4b5563;
+        .pulse-active {
+            animation: pulse-border 2s infinite;
+        }
+        @keyframes pulse-border {
+            0% { border-color: rgba(16, 185, 129, 0.4); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.2); }
+            70% { border-color: rgba(16, 185, 129, 0.9); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { border-color: rgba(16, 185, 129, 0.4); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between bg-slate-950 text-slate-100">
+<body class="min-h-screen flex flex-col justify-between bg-slate-950 text-slate-100 pb-12 sm:pb-0">
 
-    <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap justify-between items-center gap-4">
+    <header class="border-b border-slate-800 bg-slate-900/95 backdrop-blur sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap justify-between items-center gap-3">
             <div class="flex items-center space-x-3">
                 <div class="p-2.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 font-extrabold text-xl shadow-inner">
                     <i class="fa-solid fa-[#♠]">♠</i>
                 </div>
                 <div>
                     <h1 class="text-lg sm:text-xl font-extrabold bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
-                        Bankroll & Level Tracker
+                        Bankroll & Live Table Tracker
                     </h1>
-                    <p class="text-[11px] text-slate-400 font-medium">Strict 200 BB Buy-In & 25 BI Level Ladder</p>
+                    <p class="text-[11px] text-slate-400 font-medium">Real-Time In-Play Tables &bull; Strict 25 Buy-In Gate</p>
                 </div>
             </div>
 
-            <!-- Header Quick Controls -->
-            <div class="flex items-center space-x-2 sm:space-x-3">
-                <button onclick="openTransactionModal('deposit')" class="px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition flex items-center space-x-1.5 shadow-lg shadow-emerald-950/50">
+            <div class="flex items-center space-x-2">
+                <button onclick="openOpenTableModal()" class="px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition flex items-center space-x-1.5 shadow-lg shadow-emerald-950/50">
+                    <i class="fa-solid fa-play"></i>
+                    <span>Open Table</span>
+                </button>
+                <button onclick="openTransactionModal('deposit')" class="px-3 py-2 text-xs sm:text-sm font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 transition flex items-center space-x-1">
                     <i class="fa-solid fa-plus-circle"></i>
                     <span>Deposit</span>
                 </button>
-                <button onclick="openTransactionModal('withdraw')" class="px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 transition flex items-center space-x-1.5">
+                <button onclick="openTransactionModal('withdraw')" class="px-3 py-2 text-xs sm:text-sm font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 transition flex items-center space-x-1">
                     <i class="fa-solid fa-minus-circle"></i>
                     <span>Withdraw</span>
                 </button>
-                <button onclick="openModal('sessionModal')" class="px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl bg-blue-600 hover:bg-blue-500 text-white transition flex items-center space-x-1.5 shadow-lg shadow-blue-950/50">
-                    <i class="fa-solid fa-play"></i>
-                    <span>Log Session</span>
-                </button>
-                <button onclick="openModal('settingsModal')" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition" title="Settings & Data Tools">
+                <button onclick="openModal('settingsModal')" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition" title="Settings">
                     <i class="fa-solid fa-gear text-lg"></i>
                 </button>
             </div>
@@ -96,118 +108,130 @@
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 flex-grow w-full">
 
-        <!-- Banner Alert & Active Tier Display -->
-        <div id="levelAlertBanner" class="p-5 rounded-2xl border transition-all duration-300 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 bg-slate-900/80 border-slate-800 shadow-xl relative overflow-hidden">
-            <div class="flex items-center space-x-4 z-10">
-                <div id="levelBadgeIcon" class="w-14 h-14 rounded-2xl flex flex-col items-center justify-center font-black bg-slate-800 text-slate-200 border border-slate-700 shadow-inner">
-                    <span class="text-xs uppercase text-slate-400 font-semibold">TIER</span>
-                    <span id="tierBadgeText" class="text-base font-extrabold text-emerald-400">NL2</span>
-                </div>
-                <div>
-                    <div class="flex items-center space-x-2">
-                        <span class="text-xs uppercase tracking-wider font-semibold text-slate-400">Current Recommended Stake</span>
-                        <span id="dangerBadge" class="hidden px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-rose-500/20 text-rose-400 border border-rose-500/30">
-                            ⚠️ Lower Stakes Recommended
-                        </span>
+        <!-- Active Tier & Total Cash Breakdown Banner -->
+        <div id="levelAlertBanner" class="p-5 rounded-2xl border transition-all duration-300 bg-slate-900/80 border-slate-800 shadow-xl space-y-4">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                    <div id="levelBadgeIcon" class="w-14 h-14 rounded-2xl flex flex-col items-center justify-center font-black bg-slate-800 text-slate-200 border border-slate-700 shadow-inner">
+                        <span class="text-[10px] uppercase text-slate-400 font-semibold">TIER</span>
+                        <span id="tierBadgeText" class="text-base font-extrabold text-emerald-400">NL2</span>
                     </div>
-                    <h2 id="currentStakesTitle" class="text-2xl sm:text-3xl font-black text-white tracking-tight mt-0.5">
-                        $0.01 / $0.02 SB/BB (NL2)
-                    </h2>
-                    <p id="currentStakesSubtitle" class="text-xs text-slate-400 mt-1">
-                        Max Table Buy-in: <span class="font-mono text-slate-200 font-bold">$4.00</span> (200 BB) &bull; Threshold Required: <span class="font-mono text-slate-200 font-bold">$200.00</span>
-                    </p>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs uppercase tracking-wider font-semibold text-slate-400">Recommended Max Level</span>
+                            <span id="dangerBadge" class="hidden px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                                ⚠️ Drop Down Recommended
+                            </span>
+                        </div>
+                        <h2 id="currentStakesTitle" class="text-2xl sm:text-3xl font-black text-white tracking-tight mt-0.5">
+                            $0.01 / $0.02 SB/BB (NL2)
+                        </h2>
+                        <p id="currentStakesSubtitle" class="text-xs text-slate-400 mt-0.5">
+                            Max Buy-in: <span class="font-mono text-slate-200 font-bold">$4.00</span> (200 BB) &bull; Threshold: <span class="font-mono text-slate-200 font-bold">$200.00</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 3-Way Cash Allocation Header -->
+                <div class="grid grid-cols-3 gap-3 w-full md:w-auto bg-slate-950/80 p-3 rounded-xl border border-slate-800 text-center font-mono">
+                    <div>
+                        <span class="text-[10px] text-slate-400 uppercase font-semibold block">Total BR</span>
+                        <span id="totalBankrollDisplay" class="text-xl sm:text-2xl font-black text-emerald-400">$0.00</span>
+                    </div>
+                    <div class="border-x border-slate-800 px-2">
+                        <span class="text-[10px] text-amber-400/90 uppercase font-semibold block">In-Play</span>
+                        <span id="inPlayCashDisplay" class="text-xl sm:text-2xl font-bold text-amber-400">$0.00</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] text-cyan-400/90 uppercase font-semibold block">Available</span>
+                        <span id="availableCashDisplay" class="text-xl sm:text-2xl font-bold text-cyan-400">$0.00</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Real-time Bankroll Overview Card -->
-            <div class="flex items-center space-x-6 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 pt-4 md:pt-0 border-slate-800/80 z-10">
-                <div class="text-left md:text-right">
-                    <span class="text-xs text-slate-400 font-medium block">Total Bankroll Balance</span>
-                    <span id="totalBankrollDisplay" class="text-3xl sm:text-4xl font-black text-emerald-400 tracking-tight font-mono">$0.00</span>
+            <!-- Tier Level Progress Bar -->
+            <div class="pt-2 border-t border-slate-800/80 space-y-1.5">
+                <div class="flex justify-between items-center text-xs font-semibold">
+                    <span id="tierProgressLabel" class="text-slate-300 flex items-center space-x-1.5">
+                        <i class="fa-solid fa-chart-line text-emerald-400"></i>
+                        <span>Progress to Next Tier Target</span>
+                    </span>
+                    <span id="tierProgressPercent" class="text-emerald-400 font-mono font-bold">0.0%</span>
                 </div>
-                <div class="text-right pl-4 border-l border-slate-800">
-                    <span class="text-xs text-slate-400 font-medium block">Next Level Threshold</span>
-                    <span id="nextLevelThresholdDisplay" class="text-lg font-bold text-slate-200 font-mono">$450.00</span>
+                <div class="w-full bg-slate-950 rounded-full h-3.5 p-0.5 border border-slate-800 relative overflow-hidden">
+                    <div id="tierProgressBar" class="bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-400 h-full rounded-full transition-all duration-500 shadow-md" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between text-[11px] text-slate-400 font-mono">
+                    <span id="tierMinDisplay">Floor: $200.00</span>
+                    <span id="tierDeltaDisplay" class="text-emerald-400/90 font-semibold">Needed: $250.00</span>
+                    <span id="tierMaxDisplay">Target: $450.00</span>
                 </div>
             </div>
         </div>
 
-        <!-- Tier Progress Bar Card -->
-        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 shadow-sm space-y-2">
-            <div class="flex justify-between items-center text-xs font-semibold">
+        <section class="space-y-3">
+            <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-2">
-                    <i class="fa-solid fa-chart-line text-emerald-400"></i>
-                    <span id="tierProgressLabel" class="text-slate-200">Progress to Next Tier</span>
+                    <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></div>
+                    <h3 class="text-base font-bold text-slate-100 uppercase tracking-wider">Active Tables In-Play (<span id="activeTableCount">0</span>/6)</h3>
                 </div>
-                <span id="tierProgressPercent" class="text-emerald-400 font-mono text-sm font-bold">0.0%</span>
+                <button onclick="openOpenTableModal()" class="text-xs bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-xl font-semibold flex items-center space-x-1 transition">
+                    <i class="fa-solid fa-plus text-[10px]"></i>
+                    <span>Open New Table</span>
+                </button>
             </div>
-            
-            <div class="w-full bg-slate-950 rounded-full h-4 p-0.5 border border-slate-800 relative overflow-hidden">
-                <div id="tierProgressBar" class="bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-400 h-full rounded-full transition-all duration-500 shadow-md" style="width: 0%"></div>
-            </div>
-            
-            <div class="flex justify-between text-xs text-slate-400 font-mono pt-1">
-                <span id="tierMinDisplay">Floor: $200.00</span>
-                <span id="tierDeltaDisplay" class="text-emerald-400/90 font-semibold">Needed: $250.00</span>
-                <span id="tierMaxDisplay">Target: $450.00</span>
-            </div>
-        </div>
 
-        <!-- Quick Stats Grid -->
+            <!-- Active Tables Grid Container -->
+            <div id="activeTablesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Dynamically populated or empty state -->
+            </div>
+        </section>
+
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-4">
                 <span class="text-xs text-slate-400 font-medium">Net Play Profit</span>
                 <p id="statNetProfit" class="text-xl font-extrabold text-slate-100 mt-1 font-mono">$0.00</p>
             </div>
             <div class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-4">
-                <span class="text-xs text-slate-400 font-medium">Sessions Played</span>
-                <p id="statTotalSessions" class="text-xl font-extrabold text-slate-100 mt-1">0</p>
+                <span class="text-xs text-slate-400 font-medium">Completed Tables</span>
+                <p id="statTotalTables" class="text-xl font-extrabold text-slate-100 mt-1">0</p>
             </div>
             <div class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-4">
-                <span class="text-xs text-slate-400 font-medium">Session Win Rate</span>
+                <span class="text-xs text-slate-400 font-medium">Table Win Rate</span>
                 <p id="statWinrate" class="text-xl font-extrabold text-slate-100 mt-1 font-mono">0.0%</p>
             </div>
             <div class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-4">
-                <span class="text-xs text-slate-400 font-medium">Net Cashflow (Deposits)</span>
+                <span class="text-xs text-slate-400 font-medium">Net Cash Flow</span>
                 <p id="statNetCashflow" class="text-xl font-extrabold text-slate-100 mt-1 font-mono">$0.00</p>
             </div>
         </div>
 
-        <!-- Analytics & Tier Ladder Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            <!-- Left 2 Columns: Chart -->
             <div class="lg:col-span-2 bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between space-y-4">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h3 class="text-base font-bold text-slate-100">Bankroll Evolution & Level Thresholds</h3>
-                        <p class="text-xs text-slate-400">Track balance progress against strict 25 max buy-in level gates</p>
-                    </div>
+                <div>
+                    <h3 class="text-base font-bold text-slate-100">Bankroll Evolution & Level Gates</h3>
+                    <p class="text-xs text-slate-400">Visualizing total accumulated balance over time</p>
                 </div>
                 <div class="relative w-full h-72">
                     <canvas id="bankrollChart"></canvas>
                 </div>
             </div>
 
-            <!-- Right Column: 25 Buy-In Level Ladder Reference -->
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col">
                 <div class="flex justify-between items-center mb-1">
                     <h3 class="text-base font-bold text-slate-100">25 Buy-In Level Ladder</h3>
-                    <span class="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono">200 BB Buy-In</span>
+                    <span class="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono">200 BB Max Buy-In</span>
                 </div>
-                <p class="text-xs text-slate-400 mb-3">Requirements: +25 Max Buy-Ins (+5,000 BB) per tier</p>
-                <div class="overflow-y-auto max-h-80 pr-1 space-y-2" id="tierListContainer">
-                    <!-- Dynamic Tier Items -->
-                </div>
+                <p class="text-xs text-slate-400 mb-3">Requirements: +25 Max Buy-Ins (+5,000 BB) per level</p>
+                <div class="overflow-y-auto max-h-80 pr-1 space-y-2" id="tierListContainer"></div>
             </div>
         </div>
 
-        <!-- History & Ledger Table -->
         <div class="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
             <div class="border-b border-slate-800 px-5 py-4 flex flex-wrap justify-between items-center gap-2 bg-slate-900/90">
                 <div class="flex items-center space-x-2">
-                    <i class="fa-solid fa-list-check text-slate-400"></i>
-                    <h3 class="text-base font-bold text-slate-100">Session Log & Cashflow History</h3>
+                    <i class="fa-solid fa-clock-rotate-left text-slate-400"></i>
+                    <h3 class="text-base font-bold text-slate-100">Completed Sessions & Cash Flows</h3>
                 </div>
                 <button onclick="clearAllDataPrompt()" class="text-xs text-rose-400 hover:text-rose-300 font-medium transition">
                     <i class="fa-solid fa-trash-can mr-1"></i> Clear Ledger
@@ -220,97 +244,145 @@
                         <tr>
                             <th class="px-5 py-3">Date / Time</th>
                             <th class="px-5 py-3">Type / Stake</th>
-                            <th class="px-5 py-3">Buy-In</th>
-                            <th class="px-5 py-3">Cashed Out</th>
-                            <th class="px-5 py-3">Session Net</th>
-                            <th class="px-5 py-3">Resulting BR</th>
+                            <th class="px-5 py-3">Venue / Details</th>
+                            <th class="px-5 py-3">Duration</th>
+                            <th class="px-5 py-3">Invested</th>
+                            <th class="px-5 py-3">Returned</th>
+                            <th class="px-5 py-3">Net Profit</th>
                             <th class="px-5 py-3 text-right">Action</th>
                         </tr>
                     </thead>
-                    <tbody id="ledgerTableBody" class="divide-y divide-slate-800/60 font-mono">
-                        <!-- Dynamic Ledger Rows -->
-                    </tbody>
+                    <tbody id="ledgerTableBody" class="divide-y divide-slate-800/60 font-mono"></tbody>
                 </table>
             </div>
         </div>
 
     </main>
 
-    <!-- Footer -->
     <footer class="border-t border-slate-800/80 py-4 text-center text-xs text-slate-500">
-        Poker Bankroll & Level Tracker &bull; Built on strict 200 BB Buy-In & 25 BI Advancement Strategy
+        Poker Bankroll & Live Table Tracker &bull; Real-time active table management
     </footer>
 
-    <!-- MODAL 1: Log Session Modal -->
-    <div id="sessionModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
-            <button onclick="closeModal('sessionModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+    <!-- MODAL 1: Open New Table -->
+    <div id="openTableModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative space-y-4">
+            <button onclick="closeModal('openTableModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
-            <h3 class="text-xl font-extrabold text-white mb-1">Record Poker Session</h3>
-            <p class="text-xs text-slate-400 mb-5">Enter session buy-in and leave amount to update bankroll real-time.</p>
+            <div>
+                <h3 class="text-xl font-extrabold text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-play text-emerald-400 text-base"></i>
+                    <span>Open New Table</span>
+                </h3>
+                <p class="text-xs text-slate-400">Deducts buy-in immediately from available bankroll.</p>
+            </div>
 
-            <form id="sessionForm" onsubmit="handleSessionSubmit(event)" class="space-y-4">
+            <form id="openTableForm" onsubmit="handleOpenTableSubmit(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Select Stake Level</label>
-                    <select id="sessionStakeSelect" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
-                        <!-- Populated dynamically -->
+                    <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Stake Level</label>
+                    <select id="openTableStakeSelect" onchange="onModalStakeChange()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 font-semibold">
                     </select>
                 </div>
 
-                <!-- Quick Preset Buy-in Buttons -->
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Quick Buy-In Amount</label>
-                    <div class="grid grid-cols-3 gap-2 mb-2">
-                        <button type="button" onclick="setQuickBuyIn(1)" class="py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-medium rounded-lg border border-slate-700 text-slate-300">1x Max ($)</button>
-                        <button type="button" onclick="setQuickBuyIn(2)" class="py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-medium rounded-lg border border-slate-700 text-slate-300">2x Max ($)</button>
-                        <button type="button" onclick="setQuickBuyIn(3)" class="py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-medium rounded-lg border border-slate-700 text-slate-300">3x Max ($)</button>
-                    </div>
-                </div>
-
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Total Buy-In ($)</label>
-                        <input type="number" id="sessionBuyIn" step="0.01" min="0.01" required placeholder="4.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 font-mono">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Leave / Cash Out ($)</label>
-                        <input type="number" id="sessionCashOut" step="0.01" min="0" required placeholder="8.50" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 font-mono">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Date & Time</label>
-                        <input type="datetime-local" id="sessionDate" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+                        <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Buy-In Amount ($)</label>
+                        <input type="number" id="openTableBuyInInput" step="0.01" min="0.01" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 font-mono font-bold">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Venue / Site</label>
-                        <input type="text" id="sessionLocation" placeholder="e.g. PokerStars / Local Cash" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                        <input type="text" id="openTableVenueInput" placeholder="e.g. PokerStars" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Session Notes (Optional)</label>
-                    <textarea id="sessionNotes" rows="2" placeholder="Played tight, good hands held up..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500"></textarea>
+                <div id="tableWarningBox" class="hidden p-3 bg-rose-950/30 border border-rose-500/40 rounded-xl text-xs text-rose-300 space-y-1">
+                    <span class="font-bold block">⚠️ Stake Warning</span>
+                    <span id="tableWarningText">This stake is above your recommended level based on the 25 buy-in threshold rule.</span>
                 </div>
 
                 <div class="pt-2 flex justify-end space-x-2">
-                    <button type="button" onclick="closeModal('sessionModal')" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white">Cancel</button>
-                    <button type="submit" class="px-5 py-2 text-xs font-semibold rounded-xl bg-blue-600 hover:bg-blue-500 text-white transition shadow-lg shadow-blue-950/50">Save Session</button>
+                    <button type="button" onclick="closeModal('openTableModal')" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white">Cancel</button>
+                    <button type="submit" class="px-5 py-2 text-xs font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition shadow-lg shadow-emerald-950/50">Sit Down & Open</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL 2: Deposit / Withdraw Modal -->
+    <!-- MODAL 2: Close Table / Stand Up -->
+    <div id="closeTableModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative space-y-4">
+            <button onclick="closeModal('closeTableModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div>
+                <h3 class="text-xl font-extrabold text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-right-from-bracket text-amber-400 text-base"></i>
+                    <span>Stand Up & Close Table</span>
+                </h3>
+                <p class="text-xs text-slate-400">Input your final returned chip stack to complete the session.</p>
+            </div>
+
+            <form id="closeTableForm" onsubmit="handleCloseTableSubmit(event)" class="space-y-4">
+                <input type="hidden" id="closeTableActiveId">
+
+                <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800/80 space-y-2 text-xs">
+                    <div class="flex justify-between text-slate-400">
+                        <span>Table / Stake:</span>
+                        <span id="closeModalStakeDisplay" class="font-bold text-slate-200">NL10 ($0.05/$0.10)</span>
+                    </div>
+                    <div class="flex justify-between text-slate-400">
+                        <span>Total Invested (Buy-in + Rebuys):</span>
+                        <span id="closeModalInvestedDisplay" class="font-bold text-slate-200 font-mono">$20.00</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Final Cash-Out Stack ($)</label>
+                    <input type="number" id="closeTableStackInput" oninput="calculateClosePreview()" step="0.01" min="0" required placeholder="0.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-base text-slate-100 focus:outline-none focus:border-emerald-500 font-mono font-bold">
+                </div>
+
+                <div class="p-3 bg-slate-950 rounded-xl border border-slate-800/80 flex justify-between items-center text-xs">
+                    <span class="text-slate-400">Net Table Result:</span>
+                    <span id="closeModalNetPreview" class="font-mono font-bold text-sm">$0.00</span>
+                </div>
+
+                <div class="pt-2 flex justify-end space-x-2">
+                    <button type="button" onclick="closeModal('closeTableModal')" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white">Cancel</button>
+                    <button type="submit" class="px-5 py-2 text-xs font-semibold rounded-xl bg-blue-600 hover:bg-blue-500 text-white transition shadow-lg shadow-blue-950/50">Stand Up & Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Re-Buy / Top Up -->
+    <div id="rebuyModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl relative space-y-4">
+            <button onclick="closeModal('rebuyModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 class="text-xl font-extrabold text-white">Add Re-Buy / Top-Up</h3>
+
+            <form id="rebuyForm" onsubmit="handleRebuySubmit(event)" class="space-y-4">
+                <input type="hidden" id="rebuyTableActiveId">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Re-Buy Amount ($)</label>
+                    <input type="number" id="rebuyAmountInput" step="0.01" min="0.01" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 font-mono">
+                </div>
+                <div class="pt-2 flex justify-end space-x-2">
+                    <button type="button" onclick="closeModal('rebuyModal')" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white">Cancel</button>
+                    <button type="submit" class="px-5 py-2 text-xs font-semibold rounded-xl bg-amber-600 hover:bg-amber-500 text-white transition">Add Funds</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 4: Deposit / Withdraw -->
     <div id="transactionModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl relative">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl relative space-y-4">
             <button onclick="closeModal('transactionModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
-            <h3 id="transactionModalTitle" class="text-xl font-extrabold text-white mb-1">Deposit Funds</h3>
-            <p class="text-xs text-slate-400 mb-5">Direct bankroll adjustment without affecting win/loss graph stats.</p>
+            <h3 id="transactionModalTitle" class="text-xl font-extrabold text-white">Deposit Funds</h3>
 
             <form id="transactionForm" onsubmit="handleTransactionSubmit(event)" class="space-y-4">
                 <input type="hidden" id="transactionType" value="deposit">
@@ -320,7 +392,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Note / Description</label>
-                    <input type="text" id="transactionNote" placeholder="e.g. Initial Bankroll / Cashout" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                    <input type="text" id="transactionNote" placeholder="e.g. Deposit / Withdrawal" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
                 </div>
                 <div class="pt-2 flex justify-end space-x-2">
                     <button type="button" onclick="closeModal('transactionModal')" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white">Cancel</button>
@@ -330,9 +402,9 @@
         </div>
     </div>
 
-    <!-- MODAL 3: Settings & Data Backup -->
+    <!-- MODAL 5: Settings / Export -->
     <div id="settingsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative space-y-5">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative space-y-4">
             <button onclick="closeModal('settingsModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
@@ -341,79 +413,71 @@
             <div class="space-y-3">
                 <button onclick="exportDataJSON()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 py-3 px-4 rounded-xl text-xs font-semibold flex items-center justify-center space-x-2 transition">
                     <i class="fa-solid fa-download"></i>
-                    <span>Export JSON Backup File</span>
+                    <span>Export JSON Backup</span>
                 </button>
 
                 <div class="relative">
                     <input type="file" id="importFileInput" accept=".json" onchange="importDataJSON(event)" class="hidden">
                     <button onclick="document.getElementById('importFileInput').click()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 py-3 px-4 rounded-xl text-xs font-semibold flex items-center justify-center space-x-2 transition">
                         <i class="fa-solid fa-upload"></i>
-                        <span>Import JSON Backup File</span>
+                        <span>Import JSON Backup</span>
                     </button>
                 </div>
 
                 <button onclick="loadDemoData()" class="w-full bg-indigo-900/40 hover:bg-indigo-900/60 text-indigo-300 border border-indigo-700/50 py-3 px-4 rounded-xl text-xs font-semibold flex items-center justify-center space-x-2 transition">
                     <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    <span>Load Demo Sample Data</span>
+                    <span>Load Demo Data</span>
                 </button>
             </div>
         </div>
     </div>
 
     <script>
-        /* ==========================================================================
-           1. EXACT FORMULA & TIER DEFINITIONS
-           Rule 1: Max Table Buy-in = 200 * Big Blind (BB)
-           Rule 2: Level Delta = 25 * Max Buy-in = 25 * (200 * BB) = 5000 * BB
-           Rule 3: Level Cumulative Threshold = Previous Threshold + Level Delta
-           ========================================================================== */
         const STAKE_LEVELS = [
-            { level: 1, name: "NL2", sb: 0.01, bb: 0.02, maxBuyIn: 4, deltaReq: 100, cumulativeThreshold: 200 },
-            { level: 2, name: "NL5", sb: 0.02, bb: 0.05, maxBuyIn: 10, deltaReq: 250, cumulativeThreshold: 450 },
-            { level: 3, name: "NL10", sb: 0.05, bb: 0.10, maxBuyIn: 20, deltaReq: 500, cumulativeThreshold: 950 },
-            { level: 4, name: "NL25", sb: 0.10, bb: 0.25, maxBuyIn: 50, deltaReq: 1250, cumulativeThreshold: 2200 },
-            { level: 5, name: "NL50", sb: 0.25, bb: 0.50, maxBuyIn: 100, deltaReq: 2500, cumulativeThreshold: 4700 },
-            { level: 6, name: "NL100", sb: 0.50, bb: 1.00, maxBuyIn: 200, deltaReq: 5000, cumulativeThreshold: 9700 },
-            { level: 7, name: "NL200", sb: 1.00, bb: 2.00, maxBuyIn: 400, deltaReq: 10000, cumulativeThreshold: 19700 },
-            { level: 8, name: "NL500", sb: 2.50, bb: 5.00, maxBuyIn: 1000, deltaReq: 25000, cumulativeThreshold: 44700 },
-            { level: 9, name: "NL1000", sb: 5.00, bb: 10.00, maxBuyIn: 2000, deltaReq: 50000, cumulativeThreshold: 94700 },
-            { level: 10, name: "NL2000", sb: 10.00, bb: 20.00, maxBuyIn: 4000, deltaReq: 100000, cumulativeThreshold: 194700 }
+            { level: 1, name: "NL2", sb: 0.01, bb: 0.02, maxBuyIn: 4, cumulativeThreshold: 200 },
+            { level: 2, name: "NL5", sb: 0.02, bb: 0.05, maxBuyIn: 10, cumulativeThreshold: 450 },
+            { level: 3, name: "NL10", sb: 0.05, bb: 0.10, maxBuyIn: 20, cumulativeThreshold: 950 },
+            { level: 4, name: "NL25", sb: 0.10, bb: 0.25, maxBuyIn: 50, cumulativeThreshold: 2200 },
+            { level: 5, name: "NL50", sb: 0.25, bb: 0.50, maxBuyIn: 100, cumulativeThreshold: 4700 },
+            { level: 6, name: "NL100", sb: 0.50, bb: 1.00, maxBuyIn: 200, cumulativeThreshold: 9700 },
+            { level: 7, name: "NL200", sb: 1.00, bb: 2.00, maxBuyIn: 400, cumulativeThreshold: 19700 },
+            { level: 8, name: "NL500", sb: 2.50, bb: 5.00, maxBuyIn: 1000, cumulativeThreshold: 44700 },
+            { level: 9, name: "NL1000", sb: 5.00, bb: 10.00, maxBuyIn: 2000, cumulativeThreshold: 94700 },
+            { level: 10, name: "NL2000", sb: 10.00, bb: 20.00, maxBuyIn: 4000, cumulativeThreshold: 194700 }
         ];
 
         let state = {
-            transactions: []
+            activeTables: [],
+            completedTransactions: []
         };
 
         let bankrollChart = null;
 
-        /* ==========================================================================
-           2. APP INITIALIZATION
-           ========================================================================== */
         window.onload = function() {
             loadSavedData();
-            populateStakeDropdown();
-            setDefaultDateTime();
             renderApp();
+            setInterval(updateTableTimerDisplays, 1000);
         };
 
         function loadSavedData() {
-            const saved = localStorage.getItem('poker_brm_tracker_v2');
+            const saved = localStorage.getItem('poker_brm_tracker_v4');
             if (saved) {
                 try {
                     state = JSON.parse(saved);
+                    if (!state.activeTables) state.activeTables = [];
+                    if (!state.completedTransactions) state.completedTransactions = [];
                 } catch(e) {
-                    console.error("Error reading saved data", e);
-                    state = { transactions: [] };
+                    state = { activeTables: [], completedTransactions: [] };
                 }
             } else {
-                // Initialize default seed balance $200.00
                 state = {
-                    transactions: [{
+                    activeTables: [],
+                    completedTransactions: [{
                         id: Date.now(),
                         type: 'deposit',
                         amount: 200.00,
                         date: new Date().toISOString(),
-                        note: 'Starting Bankroll Seed'
+                        note: 'Initial Bankroll Deposit'
                     }]
                 };
                 saveState();
@@ -421,51 +485,28 @@
         }
 
         function saveState() {
-            localStorage.setItem('poker_brm_tracker_v2', JSON.stringify(state));
+            localStorage.setItem('poker_brm_tracker_v4', JSON.stringify(state));
         }
 
-        function populateStakeDropdown() {
-            const select = document.getElementById('sessionStakeSelect');
-            select.innerHTML = '';
-            STAKE_LEVELS.forEach(s => {
-                const opt = document.createElement('option');
-                opt.value = s.name;
-                opt.textContent = `${s.name} ($${s.sb.toFixed(2)}/$${s.bb.toFixed(2)}) - Max Buy-in $${s.maxBuyIn.toLocaleString()}`;
-                select.appendChild(opt);
-            });
-
-            select.addEventListener('change', (e) => {
-                const stake = STAKE_LEVELS.find(s => s.name === e.target.value);
-                if (stake) {
-                    document.getElementById('sessionBuyIn').value = stake.maxBuyIn;
-                }
-            });
+        function calculateInPlayCash() {
+            return state.activeTables.reduce((sum, t) => sum + t.totalInvested, 0);
         }
 
-        function setQuickBuyIn(multiplier) {
-            const stakeName = document.getElementById('sessionStakeSelect').value;
-            const stake = STAKE_LEVELS.find(s => s.name === stakeName);
-            if (stake) {
-                document.getElementById('sessionBuyIn').value = (stake.maxBuyIn * multiplier).toFixed(2);
-            }
-        }
-
-        function setDefaultDateTime() {
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            document.getElementById('sessionDate').value = now.toISOString().slice(0,16);
-        }
-
-        /* ==========================================================================
-           3. CORE CALCULATIONS
-           ========================================================================== */
-        function calculateBankroll() {
-            return state.transactions.reduce((acc, t) => {
+        function calculateCompletedBankroll() {
+            return state.completedTransactions.reduce((acc, t) => {
                 if (t.type === 'deposit') return acc + t.amount;
                 if (t.type === 'withdraw') return acc - t.amount;
-                if (t.type === 'session') return acc + (t.cashOut - t.buyIn);
+                if (t.type === 'table_session') return acc + (t.cashOut - t.totalInvested);
                 return acc;
             }, 0);
+        }
+
+        function calculateTotalBankroll() {
+            return calculateCompletedBankroll();
+        }
+
+        function calculateAvailableCash() {
+            return calculateTotalBankroll() - calculateInPlayCash();
         }
 
         function getActiveStakeLevel(balance) {
@@ -480,40 +521,35 @@
             return currentTier;
         }
 
-        function getNextStakeLevel(currentLevelNum) {
-            return STAKE_LEVELS.find(s => s.level === currentLevelNum + 1) || null;
-        }
-
-        /* ==========================================================================
-           4. UI RENDERING
-           ========================================================================== */
         function renderApp() {
-            const totalBR = calculateBankroll();
-            const activeLevel = getActiveStakeLevel(totalBR);
-            const nextLevel = getNextStakeLevel(activeLevel.level);
+            const totalBR = calculateTotalBankroll();
+            const inPlay = calculateInPlayCash();
+            const available = calculateAvailableCash();
 
-            // Total Balance Displays
+            const activeLevel = getActiveStakeLevel(totalBR);
+            const nextLevel = STAKE_LEVELS.find(s => s.level === activeLevel.level + 1);
+
             document.getElementById('totalBankrollDisplay').textContent = `$${totalBR.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('inPlayCashDisplay').textContent = `$${inPlay.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('availableCashDisplay').textContent = `$${available.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
             document.getElementById('tierBadgeText').textContent = activeLevel.name;
             document.getElementById('currentStakesTitle').textContent = `$${activeLevel.sb.toFixed(2)} / $${activeLevel.bb.toFixed(2)} SB/BB (${activeLevel.name})`;
-            document.getElementById('currentStakesSubtitle').innerHTML = `Max Table Buy-in: <span class="font-mono text-slate-200 font-bold">$${activeLevel.maxBuyIn.toLocaleString('en-US', {minimumFractionDigits: 2})}</span> (200 BB) &bull; Threshold Required: <span class="font-mono text-slate-200 font-bold">$${activeLevel.cumulativeThreshold.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>`;
+            document.getElementById('currentStakesSubtitle').innerHTML = `Max Buy-in: <span class="font-mono text-slate-200 font-bold">$${activeLevel.maxBuyIn.toLocaleString('en-US', {minimumFractionDigits: 2})}</span> (200 BB) &bull; Threshold Required: <span class="font-mono text-slate-200 font-bold">$${activeLevel.cumulativeThreshold.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>`;
 
-            // Check if warning banner needed
             const dangerBadge = document.getElementById('dangerBadge');
             const alertBanner = document.getElementById('levelAlertBanner');
 
             if (totalBR < activeLevel.cumulativeThreshold) {
                 dangerBadge.classList.remove('hidden');
-                alertBanner.className = "p-5 rounded-2xl border transition-all duration-300 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 bg-rose-950/20 border-rose-500/40 shadow-xl relative overflow-hidden";
+                alertBanner.className = "p-5 rounded-2xl border transition-all duration-300 bg-rose-950/20 border-rose-500/40 shadow-xl space-y-4";
             } else {
                 dangerBadge.classList.add('hidden');
-                alertBanner.className = "p-5 rounded-2xl border transition-all duration-300 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 bg-slate-900/80 border-slate-800 shadow-xl relative overflow-hidden";
+                alertBanner.className = "p-5 rounded-2xl border transition-all duration-300 bg-slate-900/80 border-slate-800 shadow-xl space-y-4";
             }
 
-            // Progress Bar Logic
             let floor = activeLevel.cumulativeThreshold;
             let target = nextLevel ? nextLevel.cumulativeThreshold : activeLevel.cumulativeThreshold;
-
             if (activeLevel.level === 1 && totalBR < 200) {
                 floor = 0;
                 target = 200;
@@ -524,12 +560,10 @@
                 const range = target - floor;
                 const progress = totalBR - floor;
                 progressPct = Math.min(100, Math.max(0, (progress / range) * 100));
-                document.getElementById('nextLevelThresholdDisplay').textContent = `$${target.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
                 document.getElementById('tierDeltaDisplay').textContent = `Needed: $${Math.max(0, target - totalBR).toLocaleString('en-US', {minimumFractionDigits: 2})}`;
             } else {
                 progressPct = 100;
-                document.getElementById('nextLevelThresholdDisplay').textContent = "MAX LEVEL";
-                document.getElementById('tierDeltaDisplay').textContent = "Highest Tier Reached";
+                document.getElementById('tierDeltaDisplay').textContent = "Highest Level Reached";
             }
 
             document.getElementById('tierProgressBar').style.width = `${progressPct}%`;
@@ -538,25 +572,250 @@
             document.getElementById('tierMaxDisplay').textContent = `Target: $${target.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
 
             // Quick Stats
-            const sessions = state.transactions.filter(t => t.type === 'session');
-            const totalSessions = sessions.length;
-            const winningSessions = sessions.filter(s => (s.cashOut - s.buyIn) > 0).length;
-            const netProfit = sessions.reduce((acc, s) => acc + (s.cashOut - s.buyIn), 0);
-            
-            const cashflows = state.transactions.filter(t => t.type === 'deposit' || t.type === 'withdraw');
+            const completedTables = state.completedTransactions.filter(t => t.type === 'table_session');
+            const totalTablesCount = completedTables.length;
+            const winningTables = completedTables.filter(t => (t.cashOut - t.totalInvested) > 0).length;
+            const netProfit = completedTables.reduce((acc, t) => acc + (t.cashOut - t.totalInvested), 0);
+            const cashflows = state.completedTransactions.filter(t => t.type === 'deposit' || t.type === 'withdraw');
             const netCashflow = cashflows.reduce((acc, c) => acc + (c.type === 'deposit' ? c.amount : -c.amount), 0);
 
             document.getElementById('statNetProfit').textContent = `${netProfit >= 0 ? '+' : ''}$${netProfit.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
             document.getElementById('statNetProfit').className = `text-xl font-extrabold mt-1 font-mono ${netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
-            
-            document.getElementById('statTotalSessions').textContent = totalSessions;
-            document.getElementById('statWinrate').textContent = totalSessions > 0 ? `${((winningSessions / totalSessions) * 100).toFixed(1)}%` : '0.0%';
+            document.getElementById('statTotalTables').textContent = totalTablesCount;
+            document.getElementById('statWinrate').textContent = totalTablesCount > 0 ? `${((winningTables / totalTablesCount) * 100).toFixed(1)}%` : '0.0%';
             document.getElementById('statNetCashflow').textContent = `$${netCashflow.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
 
-            // Render sub-views
+            renderActiveTables();
             renderTierLadder(totalBR);
             renderLedgerTable();
             renderChart();
+        }
+
+        function renderActiveTables() {
+            const container = document.getElementById('activeTablesContainer');
+            container.innerHTML = '';
+            document.getElementById('activeTableCount').textContent = state.activeTables.length;
+
+            if (state.activeTables.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 text-center space-y-2">
+                        <i class="fa-solid fa-chair text-slate-600 text-3xl"></i>
+                        <p class="text-sm font-semibold text-slate-400">No tables currently open.</p>
+                        <p class="text-xs text-slate-500">Click "Open New Table" to start playing and track in real-time.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            state.activeTables.forEach(tbl => {
+                const stakeObj = STAKE_LEVELS.find(s => s.name === tbl.stake);
+                const card = document.createElement('div');
+                card.className = "bg-slate-900 border border-emerald-500/50 rounded-2xl p-4 space-y-3 shadow-xl pulse-active relative flex flex-col justify-between";
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">${tbl.stake}</span>
+                                <span class="text-xs font-bold text-slate-200">${tbl.venue || 'Online'}</span>
+                            </div>
+                            <div class="text-[11px] text-slate-400 mt-1">
+                                $${stakeObj.sb.toFixed(2)} / $${stakeObj.bb.toFixed(2)} SB/BB
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[10px] text-slate-400 uppercase font-semibold block">Duration</span>
+                            <span class="table-timer font-mono text-xs text-emerald-400 font-bold" data-start="${tbl.startTime}">00:00:00</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800/80 flex justify-between items-center font-mono">
+                        <div>
+                            <span class="text-[10px] text-slate-500 uppercase font-semibold block">In-Play Invested</span>
+                            <span class="text-base font-extrabold text-slate-100">$${tbl.totalInvested.toFixed(2)}</span>
+                        </div>
+                        ${tbl.rebuys > 0 ? `<span class="text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded">Rebuys: $${tbl.rebuys.toFixed(2)}</span>` : ''}
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                        <button onclick="openRebuyModal(${tbl.id})" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1">
+                            <i class="fa-solid fa-plus-circle text-[10px]"></i>
+                            <span>Re-Buy</span>
+                        </button>
+                        <button onclick="openCloseTableModal(${tbl.id})" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1 shadow-md shadow-blue-950/50">
+                            <i class="fa-solid fa-right-from-bracket text-[10px]"></i>
+                            <span>Stand Up</span>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            updateTableTimerDisplays();
+        }
+
+        function updateTableTimerDisplays() {
+            const timerElems = document.querySelectorAll('.table-timer');
+            timerElems.forEach(elem => {
+                const startTime = new Date(elem.dataset.start).getTime();
+                const now = new Date().getTime();
+                const diff = Math.max(0, now - startTime);
+
+                const hrs = Math.floor(diff / 3600000).toString().padStart(2, '0');
+                const mins = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
+                const secs = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+
+                elem.textContent = `${hrs}:${mins}:${secs}`;
+            });
+        }
+
+        function openOpenTableModal() {
+            if (state.activeTables.length >= 6) {
+                alert("Maximum limit of 6 simultaneous active tables reached. Stand up from a table before opening another.");
+                return;
+            }
+
+            const select = document.getElementById('openTableStakeSelect');
+            select.innerHTML = '';
+            const activeLevel = getActiveStakeLevel(calculateTotalBankroll());
+
+            STAKE_LEVELS.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.name;
+                opt.textContent = `${s.name} ($${s.sb.toFixed(2)}/$${s.bb.toFixed(2)}) - Max $${s.maxBuyIn}`;
+                if (s.name === activeLevel.name) opt.selected = true;
+                select.appendChild(opt);
+            });
+
+            onModalStakeChange();
+            openModal('openTableModal');
+        }
+
+        function onModalStakeChange() {
+            const stakeName = document.getElementById('openTableStakeSelect').value;
+            const stakeObj = STAKE_LEVELS.find(s => s.name === stakeName);
+            const activeLevel = getActiveStakeLevel(calculateTotalBankroll());
+
+            document.getElementById('openTableBuyInInput').value = stakeObj.maxBuyIn.toFixed(2);
+
+            const warningBox = document.getElementById('tableWarningBox');
+            if (stakeObj.level > activeLevel.level) {
+                warningBox.classList.remove('hidden');
+            } else {
+                warningBox.classList.add('hidden');
+            }
+        }
+
+        function handleOpenTableSubmit(e) {
+            e.preventDefault();
+            const stakeName = document.getElementById('openTableStakeSelect').value;
+            const buyIn = parseFloat(document.getElementById('openTableBuyInInput').value) || 0;
+            const venue = document.getElementById('openTableVenueInput').value;
+
+            const available = calculateAvailableCash();
+            if (buyIn > available) {
+                if (!confirm(`Your requested buy-in ($${buyIn.toFixed(2)}) exceeds your available cash ($${available.toFixed(2)}). Continue anyway?`)) {
+                    return;
+                }
+            }
+
+            state.activeTables.push({
+                id: Date.now(),
+                stake: stakeName,
+                initialBuyIn: buyIn,
+                rebuys: 0,
+                totalInvested: buyIn,
+                startTime: new Date().toISOString(),
+                venue: venue || 'Online'
+            });
+
+            saveState();
+            closeModal('openTableModal');
+            document.getElementById('openTableForm').reset();
+            renderApp();
+        }
+
+        function openRebuyModal(id) {
+            const tbl = state.activeTables.find(t => t.id === id);
+            if (!tbl) return;
+            const stakeObj = STAKE_LEVELS.find(s => s.name === tbl.stake);
+
+            document.getElementById('rebuyTableActiveId').value = id;
+            document.getElementById('rebuyAmountInput').value = stakeObj.maxBuyIn.toFixed(2);
+            openModal('rebuyModal');
+        }
+
+        function handleRebuySubmit(e) {
+            e.preventDefault();
+            const id = parseInt(document.getElementById('rebuyTableActiveId').value);
+            const amount = parseFloat(document.getElementById('rebuyAmountInput').value) || 0;
+
+            const tbl = state.activeTables.find(t => t.id === id);
+            if (tbl) {
+                tbl.rebuys += amount;
+                tbl.totalInvested += amount;
+                saveState();
+                renderApp();
+            }
+            closeModal('rebuyModal');
+        }
+
+        function openCloseTableModal(id) {
+            const tbl = state.activeTables.find(t => t.id === id);
+            if (!tbl) return;
+
+            document.getElementById('closeTableActiveId').value = id;
+            document.getElementById('closeModalStakeDisplay').textContent = `${tbl.stake} (${tbl.venue || 'Online'})`;
+            document.getElementById('closeModalInvestedDisplay').textContent = `$${tbl.totalInvested.toFixed(2)}`;
+            document.getElementById('closeTableStackInput').value = '';
+            calculateClosePreview();
+
+            openModal('closeTableModal');
+        }
+
+        function calculateClosePreview() {
+            const id = parseInt(document.getElementById('closeTableActiveId').value);
+            const tbl = state.activeTables.find(t => t.id === id);
+            if (!tbl) return;
+
+            const stack = parseFloat(document.getElementById('closeTableStackInput').value) || 0;
+            const net = stack - tbl.totalInvested;
+
+            const preview = document.getElementById('closeModalNetPreview');
+            preview.textContent = `${net >= 0 ? '+' : ''}$${net.toFixed(2)}`;
+            preview.className = `font-mono font-bold text-sm ${net >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+        }
+
+        function handleCloseTableSubmit(e) {
+            e.preventDefault();
+            const id = parseInt(document.getElementById('closeTableActiveId').value);
+            const cashOut = parseFloat(document.getElementById('closeTableStackInput').value) || 0;
+
+            const idx = state.activeTables.findIndex(t => t.id === id);
+            if (idx === -1) return;
+
+            const tbl = state.activeTables[idx];
+            const startTime = new Date(tbl.startTime);
+            const endTime = new Date();
+            const durationMinutes = Math.round((endTime - startTime) / 60000);
+
+            state.completedTransactions.push({
+                id: Date.now(),
+                type: 'table_session',
+                stake: tbl.stake,
+                totalInvested: tbl.totalInvested,
+                cashOut: cashOut,
+                startTime: tbl.startTime,
+                date: endTime.toISOString(),
+                durationMinutes: durationMinutes,
+                venue: tbl.venue
+            });
+
+            state.activeTables.splice(idx, 1);
+
+            saveState();
+            closeModal('closeTableModal');
+            renderApp();
         }
 
         function renderTierLadder(currentBR) {
@@ -583,7 +842,7 @@
                         </span>
                         <div>
                             <div class="font-bold text-slate-200">${s.name} ($${s.sb.toFixed(2)}/$${s.bb.toFixed(2)})</div>
-                            <div class="text-[10px] text-slate-400">200x BB Max Buy-in: $${s.maxBuyIn.toLocaleString()}</div>
+                            <div class="text-[10px] text-slate-400">Max Buy-in: $${s.maxBuyIn.toLocaleString()}</div>
                         </div>
                     </div>
                     <div class="text-right">
@@ -601,21 +860,20 @@
             const tbody = document.getElementById('ledgerTableBody');
             tbody.innerHTML = '';
 
-            const sorted = [...state.transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
-
-            // Compute running bankroll map
-            const sortedAsc = [...state.transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const sorted = [...state.completedTransactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+            const sortedAsc = [...state.completedTransactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+            
             let runningBR = 0;
             const balanceMap = {};
             sortedAsc.forEach(t => {
                 if (t.type === 'deposit') runningBR += t.amount;
                 else if (t.type === 'withdraw') runningBR -= t.amount;
-                else if (t.type === 'session') runningBR += (t.cashOut - t.buyIn);
+                else if (t.type === 'table_session') runningBR += (t.cashOut - t.totalInvested);
                 balanceMap[t.id] = runningBR;
             });
 
             if (sorted.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="px-5 py-6 text-center text-slate-500 italic">No transactions or sessions logged yet.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="px-5 py-6 text-center text-slate-500 italic">No completed sessions or transactions logged yet.</td></tr>`;
                 return;
             }
 
@@ -625,38 +883,40 @@
 
                 const dt = new Date(t.date).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
                 let typeBadge = '';
-                let inAmt = '-';
-                let outAmt = '-';
+                let venueStr = t.note || t.venue || '-';
+                let durationStr = '-';
+                let investedStr = '-';
+                let returnedStr = '-';
                 let profit = 0;
                 let profitClass = 'text-slate-400';
 
                 if (t.type === 'deposit') {
                     typeBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">DEPOSIT</span>`;
-                    inAmt = `$${t.amount.toFixed(2)}`;
+                    investedStr = `$${t.amount.toFixed(2)}`;
                 } else if (t.type === 'withdraw') {
                     typeBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">WITHDRAW</span>`;
-                    outAmt = `$${t.amount.toFixed(2)}`;
-                } else if (t.type === 'session') {
+                    returnedStr = `$${t.amount.toFixed(2)}`;
+                } else if (t.type === 'table_session') {
                     typeBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">${t.stake}</span>`;
-                    inAmt = `$${t.buyIn.toFixed(2)}`;
-                    outAmt = `$${t.cashOut.toFixed(2)}`;
-                    profit = t.cashOut - t.buyIn;
+                    durationStr = `${t.durationMinutes || 0} mins`;
+                    investedStr = `$${t.totalInvested.toFixed(2)}`;
+                    returnedStr = `$${t.cashOut.toFixed(2)}`;
+                    profit = t.cashOut - t.totalInvested;
                     profitClass = profit >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold';
                 }
 
                 tr.innerHTML = `
                     <td class="px-5 py-3 whitespace-nowrap text-xs text-slate-400">${dt}</td>
                     <td class="px-5 py-3 whitespace-nowrap font-sans">${typeBadge}</td>
-                    <td class="px-5 py-3 whitespace-nowrap text-xs">${inAmt}</td>
-                    <td class="px-5 py-3 whitespace-nowrap text-xs">${outAmt}</td>
+                    <td class="px-5 py-3 whitespace-nowrap text-xs text-slate-300 font-sans">${venueStr}</td>
+                    <td class="px-5 py-3 whitespace-nowrap text-xs text-slate-400 font-sans">${durationStr}</td>
+                    <td class="px-5 py-3 whitespace-nowrap text-xs">${investedStr}</td>
+                    <td class="px-5 py-3 whitespace-nowrap text-xs">${returnedStr}</td>
                     <td class="px-5 py-3 whitespace-nowrap text-xs ${profitClass}">
-                        ${t.type === 'session' ? (profit >= 0 ? '+' : '') + '$' + profit.toFixed(2) : '-'}
+                        ${t.type === 'table_session' ? (profit >= 0 ? '+' : '') + '$' + profit.toFixed(2) : '-'}
                     </td>
-                    <td class="px-5 py-3 whitespace-nowrap text-xs text-slate-200 font-semibold">
-                        $${(balanceMap[t.id] || 0).toFixed(2)}
-                    </td>
-                    <td class="px-5 py-3 whitespace-nowrap text-right font-sans">
-                        <button onclick="deleteTransaction(${t.id})" class="text-slate-500 hover:text-rose-400 p-1 transition" title="Delete entry">
+                    <td class="px-5 py-3 whitespace-nowrap text-xs text-right font-sans">
+                        <button onclick="deleteTransaction(${t.id})" class="text-slate-500 hover:text-rose-400 p-1 transition">
                             <i class="fa-solid fa-trash-can text-xs"></i>
                         </button>
                     </td>
@@ -665,13 +925,10 @@
             });
         }
 
-        /* ==========================================================================
-           5. CHART ENGINE
-           ========================================================================== */
         function renderChart() {
             const ctx = document.getElementById('bankrollChart').getContext('2d');
-            const sorted = [...state.transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
-            
+            const sorted = [...state.completedTransactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+
             let running = 0;
             const labels = ['Start'];
             const dataPoints = [0];
@@ -679,117 +936,57 @@
             sorted.forEach(t => {
                 if (t.type === 'deposit') running += t.amount;
                 else if (t.type === 'withdraw') running -= t.amount;
-                else if (t.type === 'session') running += (t.cashOut - t.buyIn);
+                else if (t.type === 'table_session') running += (t.cashOut - t.totalInvested);
 
                 const d = new Date(t.date);
                 labels.push(`${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${(d.getMinutes()<10?'0':'')+d.getMinutes()}`);
                 dataPoints.push(running);
             });
 
-            if (bankrollChart) {
-                bankrollChart.destroy();
-            }
+            if (bankrollChart) bankrollChart.destroy();
 
             bankrollChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Bankroll Balance ($)',
+                        label: 'Total Bankroll ($)',
                         data: dataPoints,
                         borderColor: '#10b981',
                         backgroundColor: 'rgba(16, 185, 129, 0.08)',
                         borderWidth: 3,
                         fill: true,
-                        tension: 0.25,
-                        pointBackgroundColor: '#10b981',
-                        pointRadius: 4,
-                        pointHoverRadius: 6
+                        tension: 0.2,
+                        pointBackgroundColor: '#10b981'
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: (ctx) => ` Balance: $${ctx.raw.toFixed(2)}`
-                            }
-                        }
-                    },
+                    plugins: { legend: { display: false } },
                     scales: {
-                        x: {
-                            grid: { color: 'rgba(51, 65, 85, 0.3)' },
-                            ticks: { color: '#64748b', fontSize: 10 }
-                        },
-                        y: {
-                            grid: { color: 'rgba(51, 65, 85, 0.3)' },
-                            ticks: { 
-                                color: '#94a3b8',
-                                callback: (val) => '$' + val
-                            }
-                        }
+                        x: { grid: { color: 'rgba(51, 65, 85, 0.3)' }, ticks: { color: '#64748b', fontSize: 10 } },
+                        y: { grid: { color: 'rgba(51, 65, 85, 0.3)' }, ticks: { color: '#94a3b8', callback: (v) => '$' + v } }
                     }
                 }
             });
         }
 
-        /* ==========================================================================
-           6. EVENT HANDLERS & MODAL CONTROL
-           ========================================================================== */
-        function openModal(id) {
-            document.getElementById(id).classList.remove('hidden');
-            if (id === 'sessionModal') {
-                const sel = document.getElementById('sessionStakeSelect');
-                const stake = STAKE_LEVELS.find(s => s.name === sel.value);
-                if (stake) document.getElementById('sessionBuyIn').value = stake.maxBuyIn;
-            }
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
         function openTransactionModal(type) {
             document.getElementById('transactionType').value = type;
             const title = document.getElementById('transactionModalTitle');
             const btn = document.getElementById('transactionSubmitBtn');
             if (type === 'deposit') {
-                title.textContent = 'Deposit Bankroll Funds';
+                title.textContent = 'Deposit Funds';
                 btn.className = 'px-5 py-2 text-xs font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition';
             } else {
-                title.textContent = 'Withdraw Bankroll Funds';
+                title.textContent = 'Withdraw Funds';
                 btn.className = 'px-5 py-2 text-xs font-semibold rounded-xl bg-amber-600 hover:bg-amber-500 text-white transition';
             }
             openModal('transactionModal');
-        }
-
-        function handleSessionSubmit(e) {
-            e.preventDefault();
-            const stake = document.getElementById('sessionStakeSelect').value;
-            const buyIn = parseFloat(document.getElementById('sessionBuyIn').value);
-            const cashOut = parseFloat(document.getElementById('sessionCashOut').value);
-            const date = document.getElementById('sessionDate').value;
-            const location = document.getElementById('sessionLocation').value;
-            const notes = document.getElementById('sessionNotes').value;
-
-            state.transactions.push({
-                id: Date.now(),
-                type: 'session',
-                stake: stake,
-                buyIn: buyIn,
-                cashOut: cashOut,
-                date: new Date(date).toISOString(),
-                location: location || 'Online',
-                notes: notes
-            });
-
-            saveState();
-            closeModal('sessionModal');
-            document.getElementById('sessionForm').reset();
-            setDefaultDateTime();
-            renderApp();
         }
 
         function handleTransactionSubmit(e) {
@@ -798,7 +995,7 @@
             const amount = parseFloat(document.getElementById('transactionAmount').value);
             const note = document.getElementById('transactionNote').value;
 
-            state.transactions.push({
+            state.completedTransactions.push({
                 id: Date.now(),
                 type: type,
                 amount: amount,
@@ -813,27 +1010,25 @@
         }
 
         function deleteTransaction(id) {
-            state.transactions = state.transactions.filter(t => t.id !== id);
+            state.completedTransactions = state.completedTransactions.filter(t => t.id !== id);
             saveState();
             renderApp();
         }
 
         function clearAllDataPrompt() {
-            if (confirm("Are you sure you want to clear all session logs and transaction entries?")) {
-                state.transactions = [];
+            if (confirm("Clear all session logs and active table history?")) {
+                state.activeTables = [];
+                state.completedTransactions = [];
                 saveState();
                 renderApp();
             }
         }
 
-        /* ==========================================================================
-           7. BACKUP & SAMPLE DATA
-           ========================================================================== */
         function exportDataJSON() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
             const dlAnchorElem = document.createElement('a');
             dlAnchorElem.setAttribute("href", dataStr);
-            dlAnchorElem.setAttribute("download", `poker_brm_backup_${new Date().toISOString().slice(0,10)}.json`);
+            dlAnchorElem.setAttribute("download", `poker_brm_live_backup_${new Date().toISOString().slice(0,10)}.json`);
             dlAnchorElem.click();
         }
 
@@ -842,16 +1037,18 @@
             fileReader.onload = function (event) {
                 try {
                     const imported = JSON.parse(event.target.result);
-                    if (imported && Array.isArray(imported.transactions)) {
+                    if (imported && (imported.completedTransactions || imported.activeTables)) {
                         state = imported;
+                        if (!state.activeTables) state.activeTables = [];
+                        if (!state.completedTransactions) state.completedTransactions = [];
                         saveState();
                         renderApp();
                         closeModal('settingsModal');
                     } else {
-                        alert("Invalid JSON data structure.");
+                        alert("Invalid file format.");
                     }
                 } catch (err) {
-                    alert("Error parsing JSON backup file.");
+                    alert("Error parsing JSON file.");
                 }
             };
             fileReader.readAsText(e.target.files[0]);
@@ -859,13 +1056,13 @@
 
         function loadDemoData() {
             state = {
-                transactions: [
-                    { id: 101, type: 'deposit', amount: 200, date: new Date(Date.now() - 86400000 * 12).toISOString(), note: 'Initial Seed' },
-                    { id: 102, type: 'session', stake: 'NL2', buyIn: 4, cashOut: 11.50, date: new Date(Date.now() - 86400000 * 10).toISOString(), location: 'Online' },
-                    { id: 103, type: 'session', stake: 'NL2', buyIn: 4, cashOut: 8.80, date: new Date(Date.now() - 86400000 * 8).toISOString(), location: 'Online' },
-                    { id: 104, type: 'deposit', amount: 250, date: new Date(Date.now() - 86400000 * 6).toISOString(), note: 'Threshold Boost' },
-                    { id: 105, type: 'session', stake: 'NL5', buyIn: 10, cashOut: 22.40, date: new Date(Date.now() - 86400000 * 4).toISOString(), location: 'Online' },
-                    { id: 106, type: 'session', stake: 'NL5', buyIn: 10, cashOut: 18.00, date: new Date(Date.now() - 86400000 * 2).toISOString(), location: 'Casino' }
+                activeTables: [],
+                completedTransactions: [
+                    { id: 201, type: 'deposit', amount: 200, date: new Date(Date.now() - 86400000 * 5).toISOString(), note: 'Initial Seed' },
+                    { id: 202, type: 'table_session', stake: 'NL2', totalInvested: 4, cashOut: 9.50, date: new Date(Date.now() - 86400000 * 4).toISOString(), durationMinutes: 45, venue: 'PokerStars' },
+                    { id: 203, type: 'table_session', stake: 'NL2', totalInvested: 4, cashOut: 2.10, date: new Date(Date.now() - 86400000 * 3).toISOString(), durationMinutes: 30, venue: 'PokerStars' },
+                    { id: 204, type: 'deposit', amount: 250, date: new Date(Date.now() - 86400000 * 2).toISOString(), note: 'Bankroll Topup' },
+                    { id: 205, type: 'table_session', stake: 'NL5', totalInvested: 10, cashOut: 24.50, date: new Date(Date.now() - 86400000 * 1).toISOString(), durationMinutes: 75, venue: 'GG Poker' }
                 ]
             };
             saveState();
