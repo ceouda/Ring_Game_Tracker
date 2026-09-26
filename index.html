@@ -76,14 +76,14 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap justify-between items-center gap-3">
             <div class="flex items-center space-x-3">
                 <div class="p-2.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 font-extrabold text-xl shadow-inner">
-                    <i class="fa-solid fa-[#♠]">♠</i>
+                    <i class="fa-solid fa-poker-chip"></i>
                 </div>
                 <div>
                     <h1 class="text-lg sm:text-xl font-extrabold bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
                         Bankroll & Level Tracker
                     </h1>
                     <p class="text-[11px] text-slate-400 font-medium">
-                        Customizable Buy-In Gate (<span id="headerBuyInMultiplierText">25</span>x) &bull; bb/100 Performance Engine
+                        Customizable Buy-In Gate (<span id="headerBuyInMultiplierText">25</span>x) &bull; bb/100 Engine
                     </p>
                 </div>
             </div>
@@ -276,8 +276,9 @@
                     <i class="fa-solid fa-clock-rotate-left text-slate-400"></i>
                     <h3 class="text-base font-bold text-slate-100">Completed Sessions & Cash Flows</h3>
                 </div>
-                <button onclick="clearAllDataPrompt()" class="text-xs text-rose-400 hover:text-rose-300 font-medium transition">
-                    <i class="fa-solid fa-trash-can mr-1"></i> Clear History
+                <button onclick="clearAllDataPrompt()" class="text-xs text-rose-400 hover:text-rose-300 font-medium transition flex items-center space-x-1">
+                    <i class="fa-solid fa-trash-can"></i>
+                    <span>Clear All Data</span>
                 </button>
             </div>
 
@@ -309,7 +310,6 @@
             www.uniquedataanalysis.com
         </a>
     </footer>
-
 
     <!-- MODAL 1: Open New Table -->
     <div id="openTableModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
@@ -602,6 +602,28 @@
             localStorage.setItem('poker_brm_tracker_v6', JSON.stringify(state));
         }
 
+        // FULL PURGE: Fixes lingering data bug by completely wiping localStorage and resetting state memory
+        function clearAllDataPrompt() {
+            if (confirm("Are you sure you want to COMPLETELY clear all bankroll data, sessions, transactions, and custom settings? This action cannot be undone.")) {
+                localStorage.clear();
+                state = {
+                    initialBankroll: 0.00,
+                    buyInMultiplier: 25,
+                    activeTables: [],
+                    completedTransactions: []
+                };
+
+                if (bankrollChart) {
+                    bankrollChart.destroy();
+                    bankrollChart = null;
+                }
+
+                saveState();
+                populateRiskDropdown();
+                renderApp();
+            }
+        }
+
         function getComputedStakeLevels() {
             const N = state.buyInMultiplier || 25;
             let currentCumulative = 0;
@@ -692,22 +714,6 @@
             return currentTier;
         }
 
-        function openInitialBankrollModal() {
-            document.getElementById('initialBankrollInput').value = state.initialBankroll.toFixed(2);
-            openModal('initialBankrollModal');
-        }
-
-        function handleInitialBankrollSubmit(e) {
-            e.preventDefault();
-            const val = parseFloat(document.getElementById('initialBankrollInput').value);
-            if (!isNaN(val) && val >= 0) {
-                state.initialBankroll = val;
-                saveState();
-                renderApp();
-                closeModal('initialBankrollModal');
-            }
-        }
-
         function renderApp() {
             const totalBR = calculateTotalBankroll();
             const inPlay = calculateInPlayCash();
@@ -789,7 +795,6 @@
             bbElem.innerHTML = `${overallBbPer100 >= 0 ? '+' : ''}${overallBbPer100.toFixed(2)} <span class="text-xs">bb/100</span>`;
             bbElem.className = `text-lg font-extrabold mt-1 font-mono ${overallBbPer100 >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
 
-            document.getElementById('statTotalTables').textContent = totalTablesCount;
             document.getElementById('statWinrate').textContent = totalTablesCount > 0 ? `${((winningTables / totalTablesCount) * 100).toFixed(1)}%` : '0.0%';
 
             renderActiveTables();
@@ -797,6 +802,74 @@
             renderTierLadder(totalBR);
             renderLedgerTable();
             renderChart();
+        }
+
+        function renderActiveTables() {
+            const container = document.getElementById('activeTablesContainer');
+            container.innerHTML = '';
+            document.getElementById('activeTableCount').textContent = state.activeTables.length;
+
+            if (state.activeTables.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full bg-slate-900/40 border border-dashed border-slate-800 rounded-2xl p-6 text-center text-slate-500">
+                        <i class="fa-solid fa-table-cells text-2xl mb-2 text-slate-600 block"></i>
+                        <span>No tables currently active. Click "Open New Table" to start playing up to 6 tables simultaneously.</span>
+                    </div>
+                `;
+                return;
+            }
+
+            state.activeTables.forEach(t => {
+                const div = document.createElement('div');
+                div.className = "bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3 relative pulse-active";
+                
+                div.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                ${t.stake}
+                            </span>
+                            <h4 class="text-sm font-bold text-white mt-1.5">${t.venue || 'Online Table'}</h4>
+                        </div>
+                        <div class="text-right font-mono">
+                            <span class="text-[10px] text-slate-400 uppercase block">Duration</span>
+                            <span id="timer-${t.id}" class="text-xs text-amber-400 font-bold">00:00:00</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800/80 flex justify-between items-center text-xs font-mono">
+                        <span class="text-slate-400">Total Invested:</span>
+                        <span class="font-bold text-emerald-400 text-sm">$${t.totalInvested.toFixed(2)}</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                        <button onclick="openRebuyModal(${t.id})" class="w-full bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1 transition">
+                            <i class="fa-solid fa-plus text-[10px]"></i>
+                            <span>Re-Buy</span>
+                        </button>
+                        <button onclick="openCloseTableModal(${t.id})" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-1.5 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1 transition shadow-md shadow-blue-950/40">
+                            <i class="fa-solid fa-right-from-bracket text-[10px]"></i>
+                            <span>Stand Up</span>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+
+            updateTableTimerDisplays();
+        }
+
+        function updateTableTimerDisplays() {
+            state.activeTables.forEach(t => {
+                const elem = document.getElementById(`timer-${t.id}`);
+                if (elem) {
+                    const elapsedSec = Math.floor((new Date() - new Date(t.startTime)) / 1000);
+                    const hrs = Math.floor(elapsedSec / 3600).toString().padStart(2, '0');
+                    const mins = Math.floor((elapsedSec % 3600) / 60).toString().padStart(2, '0');
+                    const secs = (elapsedSec % 60).toString().padStart(2, '0');
+                    elem.textContent = `${hrs}:${mins}:${secs}`;
+                }
+            });
         }
 
         function renderStakeBreakdownTable(sessions, computedLevels) {
@@ -842,13 +915,200 @@
             });
         }
 
+        function renderTierLadder(totalBR) {
+            const container = document.getElementById('tierListContainer');
+            container.innerHTML = '';
+            const computedLevels = getComputedStakeLevels();
+
+            computedLevels.forEach(s => {
+                const isUnlocked = totalBR >= s.cumulativeThreshold;
+                const div = document.createElement('div');
+                div.className = `p-3 rounded-xl border text-xs flex justify-between items-center transition ${isUnlocked ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-300' : 'bg-slate-950/60 border-slate-800/80 text-slate-500'}`;
+                
+                div.innerHTML = `
+                    <div class="flex items-center space-x-2.5">
+                        <i class="fa-solid ${isUnlocked ? 'fa-lock-open text-emerald-400' : 'fa-lock text-slate-600'}"></i>
+                        <div>
+                            <span class="font-bold text-sm ${isUnlocked ? 'text-slate-100' : 'text-slate-400'}">${s.name}</span>
+                            <span class="text-[10px] text-slate-400 block">$${s.sb.toFixed(2)} / $${s.bb.toFixed(2)}</span>
+                        </div>
+                    </div>
+                    <div class="text-right font-mono">
+                        <span class="font-extrabold text-sm ${isUnlocked ? 'text-emerald-400' : 'text-slate-400'}">$${s.cumulativeThreshold.toLocaleString()}</span>
+                        <span class="text-[10px] text-slate-500 block">Max Buy-In: $${s.maxBuyIn}</span>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function renderChart() {
+            const ctx = document.getElementById('bankrollChart').getContext('2d');
+            
+            let runningBalance = state.initialBankroll;
+            const labels = ['Initial Baseline'];
+            const data = [runningBalance];
+
+            const sortedTxs = [...state.completedTransactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            sortedTxs.forEach((t, i) => {
+                labels.push(`#${i + 1}`);
+                if (t.type === 'deposit') runningBalance += t.amount;
+                else if (t.type === 'withdraw') runningBalance -= t.amount;
+                else if (t.type === 'table_session') runningBalance += (t.cashOut - t.totalInvested);
+                data.push(runningBalance);
+            });
+
+            if (bankrollChart) {
+                bankrollChart.destroy();
+            }
+
+            bankrollChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Bankroll Balance ($)',
+                        data: data,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.25,
+                        borderWidth: 2.5,
+                        pointBackgroundColor: '#10b981'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                            ticks: { color: '#94a3b8', font: { size: 10 } }
+                        },
+                        y: {
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                            ticks: {
+                                color: '#94a3b8',
+                                font: { size: 10 },
+                                callback: value => '$' + value
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function openOpenTableModal() {
+            if (state.activeTables.length >= 6) {
+                alert("Maximum limit of 6 simultaneous active tables reached. Stand up from an active table to open a new one.");
+                return;
+            }
+
+            const totalBR = calculateTotalBankroll();
+            const computedLevels = getComputedStakeLevels();
+            const maxQualifiedLevel = getActiveStakeLevel(totalBR);
+
+            const select = document.getElementById('openTableStakeSelect');
+            select.innerHTML = '';
+
+            computedLevels.forEach(s => {
+                const isAllowable = s.level <= maxQualifiedLevel.level;
+                const opt = document.createElement('option');
+                opt.value = s.name;
+                opt.textContent = `${s.name} ($${s.sb.toFixed(2)}/$${s.bb.toFixed(2)}) ${!isAllowable ? '🔒 Locked (Higher Tier)' : ''}`;
+                opt.disabled = !isAllowable;
+                if (s.name === maxQualifiedLevel.name) opt.selected = true;
+                select.appendChild(opt);
+            });
+
+            onModalStakeChange();
+            openModal('openTableModal');
+        }
+
+        function onModalStakeChange() {
+            const stakeName = document.getElementById('openTableStakeSelect').value;
+            const computedLevels = getComputedStakeLevels();
+            const selectedObj = computedLevels.find(s => s.name === stakeName) || computedLevels[0];
+            const maxQualifiedLevel = getActiveStakeLevel(calculateTotalBankroll());
+
+            document.getElementById('openTableBuyInInput').value = selectedObj.maxBuyIn.toFixed(2);
+
+            const warnBox = document.getElementById('tableWarningBox');
+            if (selectedObj.level < maxQualifiedLevel.level) {
+                warnBox.classList.remove('hidden');
+            } else {
+                warnBox.classList.add('hidden');
+            }
+        }
+
+        function handleOpenTableSubmit(e) {
+            e.preventDefault();
+            const stakeName = document.getElementById('openTableStakeSelect').value;
+            const buyIn = parseFloat(document.getElementById('openTableBuyInInput').value);
+            const venue = document.getElementById('openTableVenueInput').value.trim();
+
+            const available = calculateAvailableCash();
+            if (buyIn > available) {
+                alert(`Insufficient available cash ($${available.toFixed(2)}) to fulfill this table buy-in.`);
+                return;
+            }
+
+            state.activeTables.push({
+                id: Date.now(),
+                stake: stakeName,
+                totalInvested: buyIn,
+                startTime: new Date().toISOString(),
+                venue: venue || 'Online Table'
+            });
+
+            saveState();
+            closeModal('openTableModal');
+            renderApp();
+        }
+
+        function openRebuyModal(id) {
+            const tbl = state.activeTables.find(t => t.id === id);
+            if (!tbl) return;
+
+            const computedLevels = getComputedStakeLevels();
+            const selectedObj = computedLevels.find(s => s.name === tbl.stake) || computedLevels[0];
+
+            document.getElementById('rebuyTableActiveId').value = id;
+            document.getElementById('rebuyAmountInput').value = selectedObj.maxBuyIn.toFixed(2);
+            openModal('rebuyModal');
+        }
+
+        function handleRebuySubmit(e) {
+            e.preventDefault();
+            const id = parseInt(document.getElementById('rebuyTableActiveId').value);
+            const amount = parseFloat(document.getElementById('rebuyAmountInput').value);
+
+            const available = calculateAvailableCash();
+            if (amount > available) {
+                alert(`Insufficient available cash ($${available.toFixed(2)}) to add re-buy.`);
+                return;
+            }
+
+            const tbl = state.activeTables.find(t => t.id === id);
+            if (tbl) {
+                tbl.totalInvested += amount;
+                saveState();
+                closeModal('rebuyModal');
+                renderApp();
+            }
+        }
+
         function openCloseTableModal(id) {
             const tbl = state.activeTables.find(t => t.id === id);
             if (!tbl) return;
 
             const startTime = new Date(tbl.startTime);
             const durationMinutes = Math.max(1, Math.round((new Date() - startTime) / 60000));
-            // Default 60 hands per hour estimate
+            // Default estimated 60 hands per hour
             const estimatedHands = Math.max(1, Math.round((durationMinutes / 60) * 60));
 
             document.getElementById('closeTableActiveId').value = id;
@@ -919,6 +1179,55 @@
             renderApp();
         }
 
+        function openTransactionModal(type) {
+            document.getElementById('transactionType').value = type;
+            document.getElementById('transactionModalTitle').textContent = type === 'deposit' ? 'Deposit Funds' : 'Withdraw Funds';
+            document.getElementById('transactionSubmitBtn').className = `px-5 py-2 text-xs font-semibold rounded-xl text-white transition ${type === 'deposit' ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-amber-600 hover:bg-amber-500'}`;
+            document.getElementById('transactionAmount').value = '';
+            document.getElementById('transactionNote').value = '';
+            openModal('transactionModal');
+        }
+
+        function handleTransactionSubmit(e) {
+            e.preventDefault();
+            const type = document.getElementById('transactionType').value;
+            const amount = parseFloat(document.getElementById('transactionAmount').value);
+            const note = document.getElementById('transactionNote').value.trim();
+
+            if (type === 'withdraw' && amount > calculateAvailableCash()) {
+                alert(`Insufficient available cash ($${calculateAvailableCash().toFixed(2)}) for withdrawal.`);
+                return;
+            }
+
+            state.completedTransactions.push({
+                id: Date.now(),
+                type: type,
+                amount: amount,
+                note: note || (type === 'deposit' ? 'Deposit' : 'Withdrawal'),
+                date: new Date().toISOString()
+            });
+
+            saveState();
+            closeModal('transactionModal');
+            renderApp();
+        }
+
+        function openInitialBankrollModal() {
+            document.getElementById('initialBankrollInput').value = state.initialBankroll.toFixed(2);
+            openModal('initialBankrollModal');
+        }
+
+        function handleInitialBankrollSubmit(e) {
+            e.preventDefault();
+            const val = parseFloat(document.getElementById('initialBankrollInput').value);
+            if (!isNaN(val) && val >= 0) {
+                state.initialBankroll = val;
+                saveState();
+                renderApp();
+                closeModal('initialBankrollModal');
+            }
+        }
+
         function renderLedgerTable() {
             const tbody = document.getElementById('ledgerTableBody');
             tbody.innerHTML = '';
@@ -984,6 +1293,50 @@
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        function deleteTransaction(id) {
+            if (confirm("Delete this transaction entry?")) {
+                state.completedTransactions = state.completedTransactions.filter(t => t.id !== id);
+                saveState();
+                renderApp();
+            }
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        function exportDataJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", `poker_bankroll_backup_${new Date().toISOString().slice(0,10)}.json`);
+            dlAnchorElem.click();
+        }
+
+        function importDataJSON(event) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (imported && typeof imported === 'object') {
+                        state = imported;
+                        saveState();
+                        populateRiskDropdown();
+                        renderApp();
+                        closeModal('settingsModal');
+                        alert("Data imported successfully!");
+                    }
+                } catch(err) {
+                    alert("Invalid JSON file provided.");
+                }
+            };
+            reader.readAsText(event.target.files[0]);
         }
 
         function loadDemoData() {
