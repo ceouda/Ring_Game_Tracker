@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Poker Bankroll & Live Table Tracker</title>
-    <!-- iPhone Web App Capable -->
+    <title>Cash Game Bankroll & Level Tracker</title>
+    <!-- iOS PWA Capable -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Bankroll Tracker">
@@ -80,16 +80,22 @@
                 </div>
                 <div>
                     <h1 class="text-lg sm:text-xl font-extrabold bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
-                        Bankroll & Live Table Tracker
+                        Bankroll & Level Tracker
                     </h1>
-                    <p class="text-[11px] text-slate-400 font-medium">Real-Time In-Play Tables &bull; Strict 25 Buy-In Gate</p>
+                    <p class="text-[11px] text-slate-400 font-medium">
+                        Customizable Buy-In Gate (<span id="headerBuyInMultiplierText">25</span>x) &bull; Dynamic Lower Stake Selection
+                    </p>
                 </div>
             </div>
 
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center flex-wrap gap-2">
                 <button onclick="openOpenTableModal()" class="px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition flex items-center space-x-1.5 shadow-lg shadow-emerald-950/50">
                     <i class="fa-solid fa-play"></i>
                     <span>Open Table</span>
+                </button>
+                <button onclick="openInitialBankrollModal()" class="px-3 py-2 text-xs sm:text-sm font-semibold rounded-xl bg-indigo-900/50 hover:bg-indigo-800/60 text-indigo-300 border border-indigo-700/60 transition flex items-center space-x-1">
+                    <i class="fa-solid fa-wallet"></i>
+                    <span>Set Initial BR</span>
                 </button>
                 <button onclick="openTransactionModal('deposit')" class="px-3 py-2 text-xs sm:text-sm font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 transition flex items-center space-x-1">
                     <i class="fa-solid fa-plus-circle"></i>
@@ -99,7 +105,7 @@
                     <i class="fa-solid fa-minus-circle"></i>
                     <span>Withdraw</span>
                 </button>
-                <button onclick="openModal('settingsModal')" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition" title="Settings">
+                <button onclick="openModal('settingsModal')" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition" title="User Settings & Risk Level">
                     <i class="fa-solid fa-gear text-lg"></i>
                 </button>
             </div>
@@ -113,12 +119,12 @@
             <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div class="flex items-center space-x-4">
                     <div id="levelBadgeIcon" class="w-14 h-14 rounded-2xl flex flex-col items-center justify-center font-black bg-slate-800 text-slate-200 border border-slate-700 shadow-inner">
-                        <span class="text-[10px] uppercase text-slate-400 font-semibold">TIER</span>
+                        <span class="text-[10px] uppercase text-slate-400 font-semibold">MAX</span>
                         <span id="tierBadgeText" class="text-base font-extrabold text-emerald-400">NL2</span>
                     </div>
                     <div>
                         <div class="flex items-center space-x-2">
-                            <span class="text-xs uppercase tracking-wider font-semibold text-slate-400">Recommended Max Level</span>
+                            <span class="text-xs uppercase tracking-wider font-semibold text-slate-400">Max Qualified Stake Level</span>
                             <span id="dangerBadge" class="hidden px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-rose-500/20 text-rose-400 border border-rose-500/30">
                                 ⚠️ Drop Down Recommended
                             </span>
@@ -127,7 +133,7 @@
                             $0.01 / $0.02 SB/BB (NL2)
                         </h2>
                         <p id="currentStakesSubtitle" class="text-xs text-slate-400 mt-0.5">
-                            Max Buy-in: <span class="font-mono text-slate-200 font-bold">$4.00</span> (200 BB) &bull; Threshold: <span class="font-mono text-slate-200 font-bold">$200.00</span>
+                            Max Table Buy-in: <span class="font-mono text-slate-200 font-bold">$4.00</span> (200 BB) &bull; Threshold: <span class="font-mono text-slate-200 font-bold">$200.00</span>
                         </p>
                     </div>
                 </div>
@@ -169,6 +175,7 @@
             </div>
         </div>
 
+        <!-- Active Tables Section -->
         <section class="space-y-3">
             <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-2">
@@ -181,13 +188,20 @@
                 </button>
             </div>
 
-            <!-- Active Tables Grid Container -->
             <div id="activeTablesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Dynamically populated or empty state -->
+                <!-- Dynamically populated tables -->
             </div>
         </section>
 
+        <!-- Stats Overview Cards -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-4 cursor-pointer hover:border-slate-700 transition" onclick="openInitialBankrollModal()" title="Click to edit Initial Starting Bankroll">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs text-slate-400 font-medium">Initial Bankroll</span>
+                    <i class="fa-solid fa-pen text-[10px] text-slate-500"></i>
+                </div>
+                <p id="statInitialBankroll" class="text-xl font-extrabold text-indigo-300 mt-1 font-mono">$200.00</p>
+            </div>
             <div class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-4">
                 <span class="text-xs text-slate-400 font-medium">Net Play Profit</span>
                 <p id="statNetProfit" class="text-xl font-extrabold text-slate-100 mt-1 font-mono">$0.00</p>
@@ -200,17 +214,13 @@
                 <span class="text-xs text-slate-400 font-medium">Table Win Rate</span>
                 <p id="statWinrate" class="text-xl font-extrabold text-slate-100 mt-1 font-mono">0.0%</p>
             </div>
-            <div class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-4">
-                <span class="text-xs text-slate-400 font-medium">Net Cash Flow</span>
-                <p id="statNetCashflow" class="text-xl font-extrabold text-slate-100 mt-1 font-mono">$0.00</p>
-            </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-2 bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between space-y-4">
                 <div>
-                    <h3 class="text-base font-bold text-slate-100">Bankroll Evolution & Level Gates</h3>
-                    <p class="text-xs text-slate-400">Visualizing total accumulated balance over time</p>
+                    <h3 class="text-base font-bold text-slate-100">Bankroll Evolution & Stake Gates</h3>
+                    <p class="text-xs text-slate-400">Total accumulated balance progression over time</p>
                 </div>
                 <div class="relative w-full h-72">
                     <canvas id="bankrollChart"></canvas>
@@ -219,10 +229,12 @@
 
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col">
                 <div class="flex justify-between items-center mb-1">
-                    <h3 class="text-base font-bold text-slate-100">25 Buy-In Level Ladder</h3>
+                    <h3 class="text-base font-bold text-slate-100">Level Progression Ladder</h3>
                     <span class="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono">200 BB Max Buy-In</span>
                 </div>
-                <p class="text-xs text-slate-400 mb-3">Requirements: +25 Max Buy-Ins (+5,000 BB) per level</p>
+                <p class="text-xs text-slate-400 mb-3">
+                    Requirements: +<span id="ladderBuyInMultiplierText">25</span> Max Buy-Ins (+<span id="ladderBBMultiplierText">5000</span> BB) per tier
+                </p>
                 <div class="overflow-y-auto max-h-80 pr-1 space-y-2" id="tierListContainer"></div>
             </div>
         </div>
@@ -234,7 +246,7 @@
                     <h3 class="text-base font-bold text-slate-100">Completed Sessions & Cash Flows</h3>
                 </div>
                 <button onclick="clearAllDataPrompt()" class="text-xs text-rose-400 hover:text-rose-300 font-medium transition">
-                    <i class="fa-solid fa-trash-can mr-1"></i> Clear Ledger
+                    <i class="fa-solid fa-trash-can mr-1"></i> Clear History
                 </button>
             </div>
 
@@ -260,8 +272,12 @@
     </main>
 
     <footer class="border-t border-slate-800/80 py-4 text-center text-xs text-slate-500">
-        Poker Bankroll & Live Table Tracker &bull; Real-time active table management
+        Another product from unique data analysis &bull; 
+        <a href="https://www.uniquedataanalysis.com" target="_blank" rel="noopener noreferrer" class="text-emerald-400 hover:text-emerald-300 font-semibold hover:underline transition">
+            www.uniquedataanalysis.com
+        </a>
     </footer>
+
 
     <!-- MODAL 1: Open New Table -->
     <div id="openTableModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
@@ -274,12 +290,12 @@
                     <i class="fa-solid fa-play text-emerald-400 text-base"></i>
                     <span>Open New Table</span>
                 </h3>
-                <p class="text-xs text-slate-400">Deducts buy-in immediately from available bankroll.</p>
+                <p class="text-xs text-slate-400">Select any stake up to your current qualified level.</p>
             </div>
 
             <form id="openTableForm" onsubmit="handleOpenTableSubmit(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Stake Level</label>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Select Stake Level</label>
                     <select id="openTableStakeSelect" onchange="onModalStakeChange()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 font-semibold">
                     </select>
                 </div>
@@ -295,9 +311,9 @@
                     </div>
                 </div>
 
-                <div id="tableWarningBox" class="hidden p-3 bg-rose-950/30 border border-rose-500/40 rounded-xl text-xs text-rose-300 space-y-1">
-                    <span class="font-bold block">⚠️ Stake Warning</span>
-                    <span id="tableWarningText">This stake is above your recommended level based on the 25 buy-in threshold rule.</span>
+                <div id="tableWarningBox" class="hidden p-3 bg-amber-950/30 border border-amber-500/40 rounded-xl text-xs text-amber-300 space-y-1">
+                    <span class="font-bold block">💡 Lower Level Selection</span>
+                    <span id="tableWarningText">You are choosing to play at a stake lower than your max qualified level. This is fully supported and recommended for lower variance!</span>
                 </div>
 
                 <div class="pt-2 flex justify-end space-x-2">
@@ -308,7 +324,35 @@
         </div>
     </div>
 
-    <!-- MODAL 2: Close Table / Stand Up -->
+    <!-- MODAL 2: Initial Starting Bankroll Setup -->
+    <div id="initialBankrollModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl relative space-y-4">
+            <button onclick="closeModal('initialBankrollModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div>
+                <h3 class="text-xl font-extrabold text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-wallet text-indigo-400 text-base"></i>
+                    <span>Set Initial Bankroll</span>
+                </h3>
+                <p class="text-xs text-slate-400">Define your baseline starting capital.</p>
+            </div>
+
+            <form id="initialBankrollForm" onsubmit="handleInitialBankrollSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Starting Amount ($)</label>
+                    <input type="number" id="initialBankrollInput" step="0.01" min="0" required placeholder="200.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 font-mono font-bold">
+                </div>
+
+                <div class="pt-2 flex justify-end space-x-2">
+                    <button type="button" onclick="closeModal('initialBankrollModal')" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white">Cancel</button>
+                    <button type="submit" class="px-5 py-2 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-lg shadow-indigo-950/50">Save Initial Baseline</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Close Table / Stand Up -->
     <div id="closeTableModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative space-y-4">
             <button onclick="closeModal('closeTableModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white">
@@ -316,7 +360,7 @@
             </button>
             <div>
                 <h3 class="text-xl font-extrabold text-white flex items-center space-x-2">
-                    <i class="fa-solid fa-right-from-bracket text-amber-400 text-base"></i>
+                    <i class="fa-solid fa-right-from-bracket text-blue-400 text-base"></i>
                     <span>Stand Up & Close Table</span>
                 </h3>
                 <p class="text-xs text-slate-400">Input your final returned chip stack to complete the session.</p>
@@ -354,7 +398,7 @@
         </div>
     </div>
 
-    <!-- MODAL 3: Re-Buy / Top Up -->
+    <!-- MODAL 4: Re-Buy / Top Up -->
     <div id="rebuyModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl relative space-y-4">
             <button onclick="closeModal('rebuyModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white">
@@ -376,7 +420,7 @@
         </div>
     </div>
 
-    <!-- MODAL 4: Deposit / Withdraw -->
+    <!-- MODAL 5: Deposit / Withdraw -->
     <div id="transactionModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl relative space-y-4">
             <button onclick="closeModal('transactionModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white">
@@ -402,29 +446,51 @@
         </div>
     </div>
 
-    <!-- MODAL 5: Settings / Export -->
+    <!-- MODAL 6: User Settings & Risk Level Management -->
     <div id="settingsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative space-y-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative space-y-5">
             <button onclick="closeModal('settingsModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
-            <h3 class="text-xl font-extrabold text-white">Data Tools & Backup</h3>
+            <div>
+                <h3 class="text-xl font-extrabold text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-gear text-emerald-400 text-base"></i>
+                    <span>User Settings & Risk Level</span>
+                </h3>
+                <p class="text-xs text-slate-400">Customize bankroll gate requirements and manage data backups.</p>
+            </div>
 
-            <div class="space-y-3">
-                <button onclick="exportDataJSON()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 py-3 px-4 rounded-xl text-xs font-semibold flex items-center justify-center space-x-2 transition">
+            <!-- Risk Level Dropdown Section -->
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                <label class="block text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center justify-between">
+                    <span>Risk Level / Threshold Buy-Ins</span>
+                    <i class="fa-solid fa-shield-halved"></i>
+                </label>
+                <select id="buyInMultiplierSelect" onchange="handleRiskLevelChange()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 font-semibold">
+                    <!-- Populated via JavaScript (15 to 35 buy-ins) -->
+                </select>
+                <div id="riskLevelDescription" class="text-[11px] text-slate-400 leading-relaxed font-mono bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/80">
+                    <!-- Dynamic description -->
+                </div>
+            </div>
+
+            <div class="border-t border-slate-800/80 pt-4 space-y-2.5">
+                <span class="text-xs font-bold text-slate-300 uppercase tracking-wider block">Data Management & Backup</span>
+                
+                <button onclick="exportDataJSON()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 py-2.5 px-4 rounded-xl text-xs font-semibold flex items-center justify-center space-x-2 transition">
                     <i class="fa-solid fa-download"></i>
                     <span>Export JSON Backup</span>
                 </button>
 
                 <div class="relative">
                     <input type="file" id="importFileInput" accept=".json" onchange="importDataJSON(event)" class="hidden">
-                    <button onclick="document.getElementById('importFileInput').click()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 py-3 px-4 rounded-xl text-xs font-semibold flex items-center justify-center space-x-2 transition">
+                    <button onclick="document.getElementById('importFileInput').click()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 py-2.5 px-4 rounded-xl text-xs font-semibold flex items-center justify-center space-x-2 transition">
                         <i class="fa-solid fa-upload"></i>
                         <span>Import JSON Backup</span>
                     </button>
                 </div>
 
-                <button onclick="loadDemoData()" class="w-full bg-indigo-900/40 hover:bg-indigo-900/60 text-indigo-300 border border-indigo-700/50 py-3 px-4 rounded-xl text-xs font-semibold flex items-center justify-center space-x-2 transition">
+                <button onclick="loadDemoData()" class="w-full bg-indigo-900/40 hover:bg-indigo-900/60 text-indigo-300 border border-indigo-700/50 py-2.5 px-4 rounded-xl text-xs font-semibold flex items-center justify-center space-x-2 transition">
                     <i class="fa-solid fa-wand-magic-sparkles"></i>
                     <span>Load Demo Data</span>
                 </button>
@@ -433,20 +499,23 @@
     </div>
 
     <script>
-        const STAKE_LEVELS = [
-            { level: 1, name: "NL2", sb: 0.01, bb: 0.02, maxBuyIn: 4, cumulativeThreshold: 200 },
-            { level: 2, name: "NL5", sb: 0.02, bb: 0.05, maxBuyIn: 10, cumulativeThreshold: 450 },
-            { level: 3, name: "NL10", sb: 0.05, bb: 0.10, maxBuyIn: 20, cumulativeThreshold: 950 },
-            { level: 4, name: "NL25", sb: 0.10, bb: 0.25, maxBuyIn: 50, cumulativeThreshold: 2200 },
-            { level: 5, name: "NL50", sb: 0.25, bb: 0.50, maxBuyIn: 100, cumulativeThreshold: 4700 },
-            { level: 6, name: "NL100", sb: 0.50, bb: 1.00, maxBuyIn: 200, cumulativeThreshold: 9700 },
-            { level: 7, name: "NL200", sb: 1.00, bb: 2.00, maxBuyIn: 400, cumulativeThreshold: 19700 },
-            { level: 8, name: "NL500", sb: 2.50, bb: 5.00, maxBuyIn: 1000, cumulativeThreshold: 44700 },
-            { level: 9, name: "NL1000", sb: 5.00, bb: 10.00, maxBuyIn: 2000, cumulativeThreshold: 94700 },
-            { level: 10, name: "NL2000", sb: 10.00, bb: 20.00, maxBuyIn: 4000, cumulativeThreshold: 194700 }
+        // Base Stake Definitions (Max Buy-In = 200 * BB)
+        const BASE_STAKE_LEVELS = [
+            { level: 1, name: "NL2", sb: 0.01, bb: 0.02, maxBuyIn: 4 },
+            { level: 2, name: "NL5", sb: 0.02, bb: 0.05, maxBuyIn: 10 },
+            { level: 3, name: "NL10", sb: 0.05, bb: 0.10, maxBuyIn: 20 },
+            { level: 4, name: "NL25", sb: 0.10, bb: 0.25, maxBuyIn: 50 },
+            { level: 5, name: "NL50", sb: 0.25, bb: 0.50, maxBuyIn: 100 },
+            { level: 6, name: "NL100", sb: 0.50, bb: 1.00, maxBuyIn: 200 },
+            { level: 7, name: "NL200", sb: 1.00, bb: 2.00, maxBuyIn: 400 },
+            { level: 8, name: "NL500", sb: 2.50, bb: 5.00, maxBuyIn: 1000 },
+            { level: 9, name: "NL1000", sb: 5.00, bb: 10.00, maxBuyIn: 2000 },
+            { level: 10, name: "NL2000", sb: 10.00, bb: 20.00, maxBuyIn: 4000 }
         ];
 
         let state = {
+            initialBankroll: 200.00,
+            buyInMultiplier: 25, // Default 25 buy-ins requirement per level
             activeTables: [],
             completedTransactions: []
         };
@@ -455,54 +524,111 @@
 
         window.onload = function() {
             loadSavedData();
+            populateRiskDropdown();
             renderApp();
             setInterval(updateTableTimerDisplays, 1000);
         };
 
         function loadSavedData() {
-            const saved = localStorage.getItem('poker_brm_tracker_v4');
+            const saved = localStorage.getItem('poker_brm_tracker_v6');
             if (saved) {
                 try {
                     state = JSON.parse(saved);
+                    if (state.initialBankroll === undefined) state.initialBankroll = 200.00;
+                    if (!state.buyInMultiplier || state.buyInMultiplier < 15 || state.buyInMultiplier > 35) {
+                        state.buyInMultiplier = 25;
+                    }
                     if (!state.activeTables) state.activeTables = [];
                     if (!state.completedTransactions) state.completedTransactions = [];
                 } catch(e) {
-                    state = { activeTables: [], completedTransactions: [] };
+                    state = { initialBankroll: 200.00, buyInMultiplier: 25, activeTables: [], completedTransactions: [] };
                 }
             } else {
                 state = {
+                    initialBankroll: 200.00,
+                    buyInMultiplier: 25,
                     activeTables: [],
-                    completedTransactions: [{
-                        id: Date.now(),
-                        type: 'deposit',
-                        amount: 200.00,
-                        date: new Date().toISOString(),
-                        note: 'Initial Bankroll Deposit'
-                    }]
+                    completedTransactions: []
                 };
                 saveState();
             }
         }
 
         function saveState() {
-            localStorage.setItem('poker_brm_tracker_v4', JSON.stringify(state));
+            localStorage.setItem('poker_brm_tracker_v6', JSON.stringify(state));
+        }
+
+        function getComputedStakeLevels() {
+            const N = state.buyInMultiplier || 25;
+            let currentCumulative = 0;
+
+            return BASE_STAKE_LEVELS.map(s => {
+                const delta = N * s.maxBuyIn;
+                currentCumulative += delta;
+                return {
+                    ...s,
+                    deltaRequired: delta,
+                    cumulativeThreshold: currentCumulative
+                };
+            });
+        }
+
+        function populateRiskDropdown() {
+            const select = document.getElementById('buyInMultiplierSelect');
+            select.innerHTML = '';
+
+            for (let i = 15; i <= 35; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                let riskLabel = "Moderate (Standard)";
+                if (i <= 18) riskLabel = "Aggressive / Fast Shot";
+                else if (i <= 22) riskLabel = "Semi-Aggressive";
+                else if (i >= 30) riskLabel = "Conservative / Very Safe";
+                else if (i >= 26) riskLabel = "Safe";
+
+                opt.textContent = `${i} Table Buy-Ins per Tier (${riskLabel})`;
+                if (i === state.buyInMultiplier) opt.selected = true;
+                select.appendChild(opt);
+            }
+
+            updateRiskDescription();
+        }
+
+        function handleRiskLevelChange() {
+            const val = parseInt(document.getElementById('buyInMultiplierSelect').value);
+            if (val >= 15 && val <= 35) {
+                state.buyInMultiplier = val;
+                saveState();
+                updateRiskDescription();
+                renderApp();
+            }
+        }
+
+        function updateRiskDescription() {
+            const N = state.buyInMultiplier;
+            const desc = document.getElementById('riskLevelDescription');
+            const nl2Threshold = N * 4;
+            const nl5Threshold = nl2Threshold + (N * 10);
+            
+            desc.innerHTML = `
+                📌 <strong>${N} Buy-Ins Requirement (${N * 200} BBs)</strong>:<br>
+                &bull; NL2 ($4 max): Qualified at <strong>$${nl2Threshold.toLocaleString()}</strong><br>
+                &bull; NL5 ($10 max): Qualified at <strong>$${nl5Threshold.toLocaleString()}</strong> (+ $${N * 10})
+            `;
         }
 
         function calculateInPlayCash() {
             return state.activeTables.reduce((sum, t) => sum + t.totalInvested, 0);
         }
 
-        function calculateCompletedBankroll() {
-            return state.completedTransactions.reduce((acc, t) => {
+        function calculateTotalBankroll() {
+            const txNet = state.completedTransactions.reduce((acc, t) => {
                 if (t.type === 'deposit') return acc + t.amount;
                 if (t.type === 'withdraw') return acc - t.amount;
                 if (t.type === 'table_session') return acc + (t.cashOut - t.totalInvested);
                 return acc;
             }, 0);
-        }
-
-        function calculateTotalBankroll() {
-            return calculateCompletedBankroll();
+            return state.initialBankroll + txNet;
         }
 
         function calculateAvailableCash() {
@@ -510,10 +636,11 @@
         }
 
         function getActiveStakeLevel(balance) {
-            let currentTier = STAKE_LEVELS[0];
-            for (let i = 0; i < STAKE_LEVELS.length; i++) {
-                if (balance >= STAKE_LEVELS[i].cumulativeThreshold) {
-                    currentTier = STAKE_LEVELS[i];
+            const levels = getComputedStakeLevels();
+            let currentTier = levels[0];
+            for (let i = 0; i < levels.length; i++) {
+                if (balance >= levels[i].cumulativeThreshold) {
+                    currentTier = levels[i];
                 } else {
                     break;
                 }
@@ -521,26 +648,49 @@
             return currentTier;
         }
 
+        function openInitialBankrollModal() {
+            document.getElementById('initialBankrollInput').value = state.initialBankroll.toFixed(2);
+            openModal('initialBankrollModal');
+        }
+
+        function handleInitialBankrollSubmit(e) {
+            e.preventDefault();
+            const val = parseFloat(document.getElementById('initialBankrollInput').value);
+            if (!isNaN(val) && val >= 0) {
+                state.initialBankroll = val;
+                saveState();
+                renderApp();
+                closeModal('initialBankrollModal');
+            }
+        }
+
         function renderApp() {
             const totalBR = calculateTotalBankroll();
             const inPlay = calculateInPlayCash();
             const available = calculateAvailableCash();
 
-            const activeLevel = getActiveStakeLevel(totalBR);
-            const nextLevel = STAKE_LEVELS.find(s => s.level === activeLevel.level + 1);
+            const computedLevels = getComputedStakeLevels();
+            const maxQualifiedLevel = getActiveStakeLevel(totalBR);
+            const nextLevel = computedLevels.find(s => s.level === maxQualifiedLevel.level + 1);
 
+            // Update UI headers with risk multiplier
+            document.getElementById('headerBuyInMultiplierText').textContent = state.buyInMultiplier;
+            document.getElementById('ladderBuyInMultiplierText').textContent = state.buyInMultiplier;
+            document.getElementById('ladderBBMultiplierText').textContent = (state.buyInMultiplier * 200).toLocaleString();
+
+            document.getElementById('statInitialBankroll').textContent = `$${state.initialBankroll.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
             document.getElementById('totalBankrollDisplay').textContent = `$${totalBR.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
             document.getElementById('inPlayCashDisplay').textContent = `$${inPlay.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
             document.getElementById('availableCashDisplay').textContent = `$${available.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 
-            document.getElementById('tierBadgeText').textContent = activeLevel.name;
-            document.getElementById('currentStakesTitle').textContent = `$${activeLevel.sb.toFixed(2)} / $${activeLevel.bb.toFixed(2)} SB/BB (${activeLevel.name})`;
-            document.getElementById('currentStakesSubtitle').innerHTML = `Max Buy-in: <span class="font-mono text-slate-200 font-bold">$${activeLevel.maxBuyIn.toLocaleString('en-US', {minimumFractionDigits: 2})}</span> (200 BB) &bull; Threshold Required: <span class="font-mono text-slate-200 font-bold">$${activeLevel.cumulativeThreshold.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>`;
+            document.getElementById('tierBadgeText').textContent = maxQualifiedLevel.name;
+            document.getElementById('currentStakesTitle').textContent = `$${maxQualifiedLevel.sb.toFixed(2)} / $${maxQualifiedLevel.bb.toFixed(2)} SB/BB (${maxQualifiedLevel.name})`;
+            document.getElementById('currentStakesSubtitle').innerHTML = `Max Buy-in: <span class="font-mono text-slate-200 font-bold">$${maxQualifiedLevel.maxBuyIn.toLocaleString('en-US', {minimumFractionDigits: 2})}</span> (200 BB) &bull; Threshold: <span class="font-mono text-slate-200 font-bold">$${maxQualifiedLevel.cumulativeThreshold.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>`;
 
             const dangerBadge = document.getElementById('dangerBadge');
             const alertBanner = document.getElementById('levelAlertBanner');
 
-            if (totalBR < activeLevel.cumulativeThreshold) {
+            if (totalBR < maxQualifiedLevel.cumulativeThreshold) {
                 dangerBadge.classList.remove('hidden');
                 alertBanner.className = "p-5 rounded-2xl border transition-all duration-300 bg-rose-950/20 border-rose-500/40 shadow-xl space-y-4";
             } else {
@@ -548,11 +698,11 @@
                 alertBanner.className = "p-5 rounded-2xl border transition-all duration-300 bg-slate-900/80 border-slate-800 shadow-xl space-y-4";
             }
 
-            let floor = activeLevel.cumulativeThreshold;
-            let target = nextLevel ? nextLevel.cumulativeThreshold : activeLevel.cumulativeThreshold;
-            if (activeLevel.level === 1 && totalBR < 200) {
+            let floor = maxQualifiedLevel.cumulativeThreshold;
+            let target = nextLevel ? nextLevel.cumulativeThreshold : maxQualifiedLevel.cumulativeThreshold;
+            if (maxQualifiedLevel.level === 1 && totalBR < computedLevels[0].cumulativeThreshold) {
                 floor = 0;
-                target = 200;
+                target = computedLevels[0].cumulativeThreshold;
             }
 
             let progressPct = 0;
@@ -575,15 +725,12 @@
             const completedTables = state.completedTransactions.filter(t => t.type === 'table_session');
             const totalTablesCount = completedTables.length;
             const winningTables = completedTables.filter(t => (t.cashOut - t.totalInvested) > 0).length;
-            const netProfit = completedTables.reduce((acc, t) => acc + (t.cashOut - t.totalInvested), 0);
-            const cashflows = state.completedTransactions.filter(t => t.type === 'deposit' || t.type === 'withdraw');
-            const netCashflow = cashflows.reduce((acc, c) => acc + (c.type === 'deposit' ? c.amount : -c.amount), 0);
+            const netTableProfit = completedTables.reduce((acc, t) => acc + (t.cashOut - t.totalInvested), 0);
 
-            document.getElementById('statNetProfit').textContent = `${netProfit >= 0 ? '+' : ''}$${netProfit.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-            document.getElementById('statNetProfit').className = `text-xl font-extrabold mt-1 font-mono ${netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+            document.getElementById('statNetProfit').textContent = `${netTableProfit >= 0 ? '+' : ''}$${netTableProfit.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            document.getElementById('statNetProfit').className = `text-xl font-extrabold mt-1 font-mono ${netTableProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
             document.getElementById('statTotalTables').textContent = totalTablesCount;
             document.getElementById('statWinrate').textContent = totalTablesCount > 0 ? `${((winningTables / totalTablesCount) * 100).toFixed(1)}%` : '0.0%';
-            document.getElementById('statNetCashflow').textContent = `$${netCashflow.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
 
             renderActiveTables();
             renderTierLadder(totalBR);
@@ -601,14 +748,16 @@
                     <div class="col-span-full bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 text-center space-y-2">
                         <i class="fa-solid fa-chair text-slate-600 text-3xl"></i>
                         <p class="text-sm font-semibold text-slate-400">No tables currently open.</p>
-                        <p class="text-xs text-slate-500">Click "Open New Table" to start playing and track in real-time.</p>
+                        <p class="text-xs text-slate-500">Click "Open New Table" to select your stake and start playing.</p>
                     </div>
                 `;
                 return;
             }
 
+            const computedLevels = getComputedStakeLevels();
+
             state.activeTables.forEach(tbl => {
-                const stakeObj = STAKE_LEVELS.find(s => s.name === tbl.stake);
+                const stakeObj = computedLevels.find(s => s.name === tbl.stake);
                 const card = document.createElement('div');
                 card.className = "bg-slate-900 border border-emerald-500/50 rounded-2xl p-4 space-y-3 shadow-xl pulse-active relative flex flex-col justify-between";
 
@@ -677,13 +826,18 @@
 
             const select = document.getElementById('openTableStakeSelect');
             select.innerHTML = '';
-            const activeLevel = getActiveStakeLevel(calculateTotalBankroll());
+            const computedLevels = getComputedStakeLevels();
+            const maxQualified = getActiveStakeLevel(calculateTotalBankroll());
 
-            STAKE_LEVELS.forEach(s => {
+            computedLevels.forEach(s => {
                 const opt = document.createElement('option');
                 opt.value = s.name;
-                opt.textContent = `${s.name} ($${s.sb.toFixed(2)}/$${s.bb.toFixed(2)}) - Max $${s.maxBuyIn}`;
-                if (s.name === activeLevel.name) opt.selected = true;
+                const isLocked = s.level > maxQualified.level;
+                
+                opt.textContent = `${s.name} ($${s.sb.toFixed(2)}/$${s.bb.toFixed(2)}) - Max Buy-in $${s.maxBuyIn}${isLocked ? ' 🔒 (Locked)' : ''}`;
+                opt.disabled = isLocked;
+                
+                if (s.name === maxQualified.name) opt.selected = true;
                 select.appendChild(opt);
             });
 
@@ -693,13 +847,14 @@
 
         function onModalStakeChange() {
             const stakeName = document.getElementById('openTableStakeSelect').value;
-            const stakeObj = STAKE_LEVELS.find(s => s.name === stakeName);
-            const activeLevel = getActiveStakeLevel(calculateTotalBankroll());
+            const computedLevels = getComputedStakeLevels();
+            const stakeObj = computedLevels.find(s => s.name === stakeName);
+            const maxQualified = getActiveStakeLevel(calculateTotalBankroll());
 
             document.getElementById('openTableBuyInInput').value = stakeObj.maxBuyIn.toFixed(2);
 
             const warningBox = document.getElementById('tableWarningBox');
-            if (stakeObj.level > activeLevel.level) {
+            if (stakeObj.level < maxQualified.level) {
                 warningBox.classList.remove('hidden');
             } else {
                 warningBox.classList.add('hidden');
@@ -714,7 +869,7 @@
 
             const available = calculateAvailableCash();
             if (buyIn > available) {
-                if (!confirm(`Your requested buy-in ($${buyIn.toFixed(2)}) exceeds your available cash ($${available.toFixed(2)}). Continue anyway?`)) {
+                if (!confirm(`Your requested buy-in ($${buyIn.toFixed(2)}) exceeds your liquid available cash ($${available.toFixed(2)}). Continue anyway?`)) {
                     return;
                 }
             }
@@ -738,7 +893,8 @@
         function openRebuyModal(id) {
             const tbl = state.activeTables.find(t => t.id === id);
             if (!tbl) return;
-            const stakeObj = STAKE_LEVELS.find(s => s.name === tbl.stake);
+            const computedLevels = getComputedStakeLevels();
+            const stakeObj = computedLevels.find(s => s.name === tbl.stake);
 
             document.getElementById('rebuyTableActiveId').value = id;
             document.getElementById('rebuyAmountInput').value = stakeObj.maxBuyIn.toFixed(2);
@@ -821,10 +977,12 @@
         function renderTierLadder(currentBR) {
             const container = document.getElementById('tierListContainer');
             container.innerHTML = '';
+            const computedLevels = getComputedStakeLevels();
+            const maxQualified = getActiveStakeLevel(currentBR);
 
-            STAKE_LEVELS.forEach(s => {
-                const isUnlocked = currentBR >= s.cumulativeThreshold || (s.level === 1 && currentBR > 0);
-                const isCurrent = getActiveStakeLevel(currentBR).level === s.level;
+            computedLevels.forEach(s => {
+                const isUnlocked = currentBR >= s.cumulativeThreshold || (s.level === 1);
+                const isCurrent = maxQualified.level === s.level;
 
                 const item = document.createElement('div');
                 item.className = `p-3 rounded-xl border text-xs flex justify-between items-center transition ${
@@ -847,8 +1005,8 @@
                     </div>
                     <div class="text-right">
                         <div class="font-mono text-xs ${isUnlocked ? 'text-emerald-400 font-bold' : 'text-slate-400'}">$${s.cumulativeThreshold.toLocaleString()}</div>
-                        <div class="text-[9px] uppercase tracking-wider font-semibold ${isCurrent ? 'text-emerald-400' : isUnlocked ? 'text-slate-400' : 'text-slate-600'}">
-                            ${isCurrent ? 'ACTIVE' : isUnlocked ? 'UNLOCKED' : 'LOCKED'}
+                        <div class="text-[9px] uppercase tracking-wider font-semibold ${isCurrent ? 'text-emerald-400' : isUnlocked ? 'text-cyan-400' : 'text-slate-600'}">
+                            ${isCurrent ? 'MAX QUALIFIED' : isUnlocked ? 'AVAILABLE' : 'LOCKED'}
                         </div>
                     </div>
                 `;
@@ -861,16 +1019,6 @@
             tbody.innerHTML = '';
 
             const sorted = [...state.completedTransactions].sort((a, b) => new Date(b.date) - new Date(a.date));
-            const sortedAsc = [...state.completedTransactions].sort((a, b) => new Date(a.date) - new Date(b.date));
-            
-            let runningBR = 0;
-            const balanceMap = {};
-            sortedAsc.forEach(t => {
-                if (t.type === 'deposit') runningBR += t.amount;
-                else if (t.type === 'withdraw') runningBR -= t.amount;
-                else if (t.type === 'table_session') runningBR += (t.cashOut - t.totalInvested);
-                balanceMap[t.id] = runningBR;
-            });
 
             if (sorted.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="8" class="px-5 py-6 text-center text-slate-500 italic">No completed sessions or transactions logged yet.</td></tr>`;
@@ -929,9 +1077,9 @@
             const ctx = document.getElementById('bankrollChart').getContext('2d');
             const sorted = [...state.completedTransactions].sort((a, b) => new Date(a.date) - new Date(b.date));
 
-            let running = 0;
-            const labels = ['Start'];
-            const dataPoints = [0];
+            let running = state.initialBankroll;
+            const labels = ['Initial BR'];
+            const dataPoints = [state.initialBankroll];
 
             sorted.forEach(t => {
                 if (t.type === 'deposit') running += t.amount;
@@ -1016,7 +1164,7 @@
         }
 
         function clearAllDataPrompt() {
-            if (confirm("Clear all session logs and active table history?")) {
+            if (confirm("Clear all session history? (Initial Starting Bankroll and Risk Settings will be preserved)")) {
                 state.activeTables = [];
                 state.completedTransactions = [];
                 saveState();
@@ -1028,7 +1176,7 @@
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
             const dlAnchorElem = document.createElement('a');
             dlAnchorElem.setAttribute("href", dataStr);
-            dlAnchorElem.setAttribute("download", `poker_brm_live_backup_${new Date().toISOString().slice(0,10)}.json`);
+            dlAnchorElem.setAttribute("download", `poker_brm_tracker_backup_${new Date().toISOString().slice(0,10)}.json`);
             dlAnchorElem.click();
         }
 
@@ -1037,11 +1185,14 @@
             fileReader.onload = function (event) {
                 try {
                     const imported = JSON.parse(event.target.result);
-                    if (imported && (imported.completedTransactions || imported.activeTables)) {
+                    if (imported) {
                         state = imported;
+                        if (state.initialBankroll === undefined) state.initialBankroll = 200.00;
+                        if (!state.buyInMultiplier) state.buyInMultiplier = 25;
                         if (!state.activeTables) state.activeTables = [];
                         if (!state.completedTransactions) state.completedTransactions = [];
                         saveState();
+                        populateRiskDropdown();
                         renderApp();
                         closeModal('settingsModal');
                     } else {
@@ -1056,16 +1207,19 @@
 
         function loadDemoData() {
             state = {
+                initialBankroll: 200.00,
+                buyInMultiplier: 25,
                 activeTables: [],
                 completedTransactions: [
-                    { id: 201, type: 'deposit', amount: 200, date: new Date(Date.now() - 86400000 * 5).toISOString(), note: 'Initial Seed' },
-                    { id: 202, type: 'table_session', stake: 'NL2', totalInvested: 4, cashOut: 9.50, date: new Date(Date.now() - 86400000 * 4).toISOString(), durationMinutes: 45, venue: 'PokerStars' },
-                    { id: 203, type: 'table_session', stake: 'NL2', totalInvested: 4, cashOut: 2.10, date: new Date(Date.now() - 86400000 * 3).toISOString(), durationMinutes: 30, venue: 'PokerStars' },
-                    { id: 204, type: 'deposit', amount: 250, date: new Date(Date.now() - 86400000 * 2).toISOString(), note: 'Bankroll Topup' },
-                    { id: 205, type: 'table_session', stake: 'NL5', totalInvested: 10, cashOut: 24.50, date: new Date(Date.now() - 86400000 * 1).toISOString(), durationMinutes: 75, venue: 'GG Poker' }
+                    { id: 301, type: 'table_session', stake: 'NL2', totalInvested: 4, cashOut: 9.50, date: new Date(Date.now() - 86400000 * 5).toISOString(), durationMinutes: 45, venue: 'PokerStars' },
+                    { id: 302, type: 'table_session', stake: 'NL2', totalInvested: 4, cashOut: 2.10, date: new Date(Date.now() - 86400000 * 4).toISOString(), durationMinutes: 30, venue: 'PokerStars' },
+                    { id: 303, type: 'deposit', amount: 250, date: new Date(Date.now() - 86400000 * 3).toISOString(), note: 'Bankroll Topup' },
+                    { id: 304, type: 'table_session', stake: 'NL5', totalInvested: 10, cashOut: 24.50, date: new Date(Date.now() - 86400000 * 2).toISOString(), durationMinutes: 75, venue: 'GG Poker' },
+                    { id: 305, type: 'table_session', stake: 'NL2', totalInvested: 4, cashOut: 7.80, date: new Date(Date.now() - 86400000 * 1).toISOString(), durationMinutes: 50, venue: 'GG Poker' }
                 ]
             };
             saveState();
+            populateRiskDropdown();
             renderApp();
             closeModal('settingsModal');
         }
