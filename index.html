@@ -19,15 +19,27 @@
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 md:p-8">
 
+  <!-- STOP-LOSS WARNING BANNER -->
+  <div id="stopLossBanner" class="hidden max-w-7xl mx-auto w-full mb-4 bg-rose-900/90 border-2 border-rose-500 text-rose-100 p-4 rounded-xl flex items-center justify-between shadow-lg animate-pulse">
+    <div class="flex items-center gap-3">
+      <span class="text-2xl">⚠️</span>
+      <div>
+        <h4 class="font-bold text-base">STOP-LOSS ALERT TRIGGERED</h4>
+        <p class="text-xs text-rose-200" id="stopLossMsg">Session losses have exceeded your set threshold. Consider taking a break to protect your bankroll.</p>
+      </div>
+    </div>
+    <button onclick="dismissStopLoss()" class="text-xs bg-rose-950 hover:bg-rose-800 px-3 py-1.5 rounded-lg font-semibold border border-rose-700">Acknowledge</button>
+  </div>
+
   <!-- TOP HEADER -->
   <header class="max-w-7xl mx-auto w-full mb-6 flex flex-col md:flex-row justify-between items-center gap-4 border-b border-slate-700 pb-4">
     <div>
       <h1 class="text-2xl md:text-3xl font-bold text-emerald-400">Cash Game Bankroll & Level Tracker</h1>
-      <p class="text-slate-400 text-sm">Dynamic Risk-Based Bankroll Management & Multi-Table Logger</p>
+      <p class="text-slate-400 text-sm">Dynamic Risk-Based Bankroll Management & Live Session Safeguards</p>
     </div>
     <div class="flex flex-wrap gap-2">
       <button onclick="openModal('initialModal')" class="btn-slate px-3 py-2 rounded-lg text-sm font-medium">Set Initial Bankroll</button>
-      <button onclick="openModal('settingsModal')" class="btn-slate px-3 py-2 rounded-lg text-sm font-medium">Risk Settings</button>
+      <button onclick="openModal('settingsModal')" class="btn-slate px-3 py-2 rounded-lg text-sm font-medium">Risk & Safeguards</button>
       <button onclick="openModal('cashFlowModal')" class="btn-emerald px-3 py-2 rounded-lg text-sm font-medium">Deposit / Withdraw</button>
     </div>
   </header>
@@ -53,9 +65,9 @@
         <div id="statNextTierTarget" class="text-xs text-slate-400 mt-1">Next Tier: $350.00</div>
       </div>
       <div class="card p-4">
-        <span class="text-xs text-slate-400 font-semibold uppercase">Overall Win Rate</span>
+        <span class="text-xs text-slate-400 font-semibold uppercase">Performance Metrics</span>
         <div id="statWinRate" class="text-2xl font-bold text-purple-400">0.0 bb/100</div>
-        <div id="statTotalHands" class="text-xs text-slate-400 mt-1">0 est. hands played</div>
+        <div id="statMindsetAvg" class="text-xs text-amber-300 mt-1">Avg Mindset: N/A</div>
       </div>
     </div>
 
@@ -123,8 +135,8 @@
               <th class="p-3">Buy-in</th>
               <th class="p-3">Cash-out</th>
               <th class="p-3">Net Profit</th>
-              <th class="p-3">Est. Hands</th>
               <th class="p-3">bb/100</th>
+              <th class="p-3">Mindset</th>
             </tr>
           </thead>
           <tbody id="sessionHistoryTable" class="divide-y divide-slate-700">
@@ -145,7 +157,7 @@
   <!-- SETTINGS MODAL -->
   <div id="settingsModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-50">
     <div class="card max-w-md w-full p-6 space-y-4">
-      <h3 class="text-xl font-bold text-white">User Settings & Strategy</h3>
+      <h3 class="text-xl font-bold text-white">Risk & Safeguard Settings</h3>
       <div>
         <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Risk Level (Buy-ins per Tier Threshold)</label>
         <select id="riskLevelSelect" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
@@ -155,7 +167,11 @@
           <option value="30">30 Buy-ins (Conservative)</option>
           <option value="35">35 Buy-ins (Ultra Conservative)</option>
         </select>
-        <p class="text-xs text-slate-400 mt-1">Adjusts cumulative bankroll thresholds needed to step up levels.</p>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Session Stop-Loss Limit (in Table Buy-ins)</label>
+        <input id="stopLossInput" type="number" step="0.5" min="1" max="10" value="3" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+        <p class="text-xs text-slate-400 mt-1">Triggers an alert banner if live session losses exceed this number of buy-ins.</p>
       </div>
       <div class="flex justify-end gap-2 pt-2">
         <button onclick="closeModal('settingsModal')" class="btn-slate px-4 py-2 rounded-lg text-sm">Cancel</button>
@@ -208,13 +224,12 @@
       <div>
         <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Select Stake Level</label>
         <select id="tableStakeSelect" onchange="updateDefaultBuyin()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
-          <!-- Dynamically populated based on max qualified tier -->
+          <!-- Dynamically populated -->
         </select>
       </div>
       <div>
         <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Buy-In Amount ($)</label>
         <input id="tableBuyinInput" type="number" step="0.01" min="0.01" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
-        <p class="text-xs text-slate-400 mt-1">Defaulted to 200× Big Blind. Instantly deducted from liquid cash.</p>
       </div>
       <div class="flex justify-end gap-2 pt-2">
         <button onclick="closeModal('openTableModal')" class="btn-slate px-4 py-2 rounded-lg text-sm">Cancel</button>
@@ -236,6 +251,16 @@
         <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Estimated Hands Played</label>
         <input id="estHandsInput" type="number" step="1" min="1" value="100" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
       </div>
+      <div>
+        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Mindset / Focus Rating (1 = Tilted, 5 = Zone)</label>
+        <select id="mindsetRatingInput" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+          <option value="5">5 - In the Zone / Peak Focus</option>
+          <option value="4" selected>4 - Good / Solid Play</option>
+          <option value="3">3 - Neutral / Average</option>
+          <option value="2">2 - Tired / Slightly Frustrated</option>
+          <option value="1">1 - Tilted / Impatient</option>
+        </select>
+      </div>
       <div class="flex justify-end gap-2 pt-2">
         <button onclick="closeModal('closeTableModal')" class="btn-slate px-4 py-2 rounded-lg text-sm">Cancel</button>
         <button onclick="confirmStandUp()" class="btn-emerald px-4 py-2 rounded-lg text-sm font-semibold">Finish Table</button>
@@ -243,9 +268,8 @@
     </div>
   </div>
 
-  <!-- JAVASCRIPT APP LOGIC -->
+  <!-- APPLICATION CODE LOGIC -->
   <script>
-    // BASE CONFIGURATION & TIER DEFINITIONS
     const BASE_TIERS = [
       { id: 'nl2', name: 'NL2', sb: 0.01, bb: 0.02, maxBuyin: 4.00 },
       { id: 'nl5', name: 'NL5', sb: 0.02, bb: 0.05, maxBuyin: 10.00 },
@@ -259,41 +283,33 @@
       { id: 'nl2000', name: 'NL2000', sb: 10.00, bb: 20.00, maxBuyin: 4000.00 }
     ];
 
-    // APPLICATION STATE Memory
     let appState = {
       initialBankroll: 100.00,
       riskMultiplier: 25,
+      stopLossBuyins: 3,
       netCashFlows: 0.00,
       activeTables: [],
       sessionHistory: []
     };
 
     let chartInstance = null;
+    let stopLossDismissed = false;
 
-    // INITIALIZATION
     window.addEventListener('DOMContentLoaded', () => {
       loadSavedData();
       initChart();
       updateUI();
     });
 
-    // CALCULATE DYNAMIC THRESHOLDS BASED ON RISK MULTIPLIER
     function getTierLadder() {
       const risk = appState.riskMultiplier;
-      let cumulative = BASE_TIERS[0].maxBuyin * risk; // Base requirement for NL2
-      
+      let cumulative = BASE_TIERS[0].maxBuyin * risk;
       return BASE_TIERS.map((tier, idx) => {
-        if (idx > 0) {
-          cumulative += tier.maxBuyin * risk;
-        }
-        return {
-          ...tier,
-          threshold: cumulative
-        };
+        if (idx > 0) cumulative += tier.maxBuyin * risk;
+        return { ...tier, threshold: cumulative };
       });
     }
 
-    // CALCULATE FINANCIAL STATE
     function getFinancials() {
       const ladder = getTierLadder();
       const inPlay = appState.activeTables.reduce((sum, t) => sum + t.currentBuyin, 0);
@@ -301,7 +317,6 @@
       const totalBankroll = appState.initialBankroll + appState.netCashFlows + sessionNet;
       const availableCash = totalBankroll - inPlay;
 
-      // QUALIFIED TIER SEARCH (NL2 ALWAYS UNLOCKED AT FLOOR)
       let maxQualifiedIdx = 0;
       for (let i = ladder.length - 1; i >= 0; i--) {
         if (totalBankroll >= ladder[i].threshold) {
@@ -321,67 +336,61 @@
         progressPct = Math.min(100, Math.max(0, (currentDelta / targetDelta) * 100));
       }
 
-      return {
-        totalBankroll,
-        inPlay,
-        availableCash,
-        currentTier,
-        nextTier,
-        progressPct,
-        netProfit: sessionNet
-      };
+      return { totalBankroll, inPlay, availableCash, currentTier, nextTier, progressPct, netProfit: sessionNet };
     }
 
-    // UI RENDER LOOP
+    function checkStopLoss(fin) {
+      if (stopLossDismissed) return;
+      const activeLosses = appState.activeTables.reduce((sum, t) => sum + t.currentBuyin, 0);
+      const maxAllowedLoss = fin.currentTier.maxBuyin * appState.stopLossBuyins;
+
+      if (fin.netProfit < -maxAllowedLoss) {
+        document.getElementById('stopLossBanner').classList.remove('hidden');
+        document.getElementById('stopLossMsg').textContent = `Session net loss ($${Math.abs(fin.netProfit).toFixed(2)}) exceeds your ${appState.stopLossBuyins} buy-in limit ($${maxAllowedLoss.toFixed(2)}). Consider ending your session.`;
+      } else {
+        document.getElementById('stopLossBanner').classList.add('hidden');
+      }
+    }
+
+    function dismissStopLoss() {
+      stopLossDismissed = true;
+      document.getElementById('stopLossBanner').classList.add('hidden');
+    }
+
     function updateUI() {
       const fin = getFinancials();
       const ladder = getTierLadder();
 
-      // Render Dashboard Header Stats
       document.getElementById('statTotalBankroll').textContent = `$${fin.totalBankroll.toFixed(2)}`;
       document.getElementById('statNetProfit').textContent = `Net Profit: $${fin.netProfit.toFixed(2)}`;
       document.getElementById('statAvailableCash').textContent = `$${fin.availableCash.toFixed(2)}`;
       document.getElementById('statInPlayCash').textContent = `In-Play: $${fin.inPlay.toFixed(2)}`;
       document.getElementById('statMaxTier').textContent = `${fin.currentTier.name} ($${fin.currentTier.sb.toFixed(2)}/$${fin.currentTier.bb.toFixed(2)})`;
-      
-      if (fin.nextTier) {
-        document.getElementById('statNextTierTarget').textContent = `Next Tier Target: $${fin.nextTier.threshold.toFixed(2)}`;
-      } else {
-        document.getElementById('statNextTierTarget').textContent = `MAX TIER REACHED`;
-      }
+      document.getElementById('statNextTierTarget').textContent = fin.nextTier ? `Next Tier Target: $${fin.nextTier.threshold.toFixed(2)}` : `MAX TIER REACHED`;
 
-      // Progress Bar
       document.getElementById('tierProgressText').textContent = `${fin.progressPct.toFixed(1)}%`;
       document.getElementById('tierProgressBar').style.width = `${fin.progressPct}%`;
 
-      // Win Rate Calculation
       const totalHands = appState.sessionHistory.reduce((sum, s) => sum + (s.hands || 0), 0);
-      let totalBBWin = 0;
+      let totalBBWin = 0, mindsetSum = 0;
       appState.sessionHistory.forEach(s => {
         totalBBWin += (s.netProfit / s.bbValue);
+        mindsetSum += (s.mindset || 4);
       });
       const overallBb100 = totalHands > 0 ? (totalBBWin / (totalHands / 100)) : 0;
+      const avgMindset = appState.sessionHistory.length > 0 ? (mindsetSum / appState.sessionHistory.length).toFixed(1) : 'N/A';
 
       document.getElementById('statWinRate').textContent = `${overallBb100.toFixed(1)} bb/100`;
-      document.getElementById('statTotalHands').textContent = `${totalHands.toLocaleString()} est. hands played`;
+      document.getElementById('statMindsetAvg').textContent = `Avg Mindset: ${avgMindset} / 5`;
 
-      // Render Active Tables
       renderActiveTables();
-
-      // Render Tier Ladder Sidebar
       renderTierLadder(ladder, fin.totalBankroll);
-
-      // Render History Table
       renderSessionHistory();
-
-      // Update Chart
       updateChart();
-
-      // Save Local Storage
+      checkStopLoss(fin);
       saveData();
     }
 
-    // RENDER LIVE TABLES
     function renderActiveTables() {
       const container = document.getElementById('activeTablesGrid');
       const emptyState = document.getElementById('noActiveTables');
@@ -417,7 +426,6 @@
       });
     }
 
-    // RENDER SIDEBAR LADDER
     function renderTierLadder(ladder, currentBankroll) {
       const container = document.getElementById('tierLadderList');
       document.getElementById('riskLevelSubtitle').textContent = `Strategy: ${appState.riskMultiplier} Buy-ins per level threshold`;
@@ -441,7 +449,6 @@
       });
     }
 
-    // RENDER HISTORY TABLE
     function renderSessionHistory() {
       const tbody = document.getElementById('sessionHistoryTable');
       tbody.innerHTML = '';
@@ -463,31 +470,25 @@
           <td class="p-3 font-mono">$${session.buyin.toFixed(2)}</td>
           <td class="p-3 font-mono">$${session.cashout.toFixed(2)}</td>
           <td class="p-3 font-mono font-bold ${profitClass}">${session.netProfit >= 0 ? '+' : ''}$${session.netProfit.toFixed(2)}</td>
-          <td class="p-3 text-slate-400">${session.hands || 100}</td>
           <td class="p-3 font-mono ${profitClass}">${bb100 >= 0 ? '+' : ''}${bb100.toFixed(1)}</td>
+          <td class="p-3 text-amber-300 font-bold">${session.mindset || 4}/5</td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    // MODAL CONTROL & TABLE ACTIONS
     function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
     function closeModal(id) { document.getElementById(id).classList.remove('flex'); document.getElementById(id).classList.add('hidden'); }
 
     function openNewTable() {
-      if (appState.activeTables.length >= 6) {
-        alert("Maximum 6 active simultaneous tables allowed.");
-        return;
-      }
+      if (appState.activeTables.length >= 6) { alert("Maximum 6 active simultaneous tables allowed."); return; }
       const fin = getFinancials();
       const ladder = getTierLadder();
       const select = document.getElementById('tableStakeSelect');
       select.innerHTML = '';
 
-      // Populate unlocked options up to current qualified tier (NL2 always included)
       ladder.forEach((tier, idx) => {
-        const isQualified = fin.totalBankroll >= tier.threshold || idx === 0;
-        if (isQualified) {
+        if (fin.totalBankroll >= tier.threshold || idx === 0) {
           const opt = document.createElement('option');
           opt.value = tier.id;
           opt.textContent = `${tier.name} ($${tier.sb.toFixed(2)}/$${tier.bb.toFixed(2)}) - Max Buy: $${tier.maxBuyin.toFixed(2)}`;
@@ -502,9 +503,7 @@
     function updateDefaultBuyin() {
       const stakeId = document.getElementById('tableStakeSelect').value;
       const tier = BASE_TIERS.find(t => t.id === stakeId);
-      if (tier) {
-        document.getElementById('tableBuyinInput').value = tier.maxBuyin.toFixed(2);
-      }
+      if (tier) document.getElementById('tableBuyinInput').value = tier.maxBuyin.toFixed(2);
     }
 
     function confirmOpenTable() {
@@ -553,11 +552,11 @@
       const tableId = document.getElementById('closingTableId').value;
       const finalStack = parseFloat(document.getElementById('finalStackInput').value) || 0;
       const hands = parseInt(document.getElementById('estHandsInput').value) || 100;
+      const mindset = parseInt(document.getElementById('mindsetRatingInput').value) || 4;
       const tableIndex = appState.activeTables.findIndex(t => t.id === tableId);
 
       if (tableIndex === -1) return;
       const table = appState.activeTables[tableIndex];
-
       const netProfit = finalStack - table.currentBuyin;
 
       appState.sessionHistory.push({
@@ -568,6 +567,7 @@
         cashout: finalStack,
         netProfit: netProfit,
         hands: hands,
+        mindset: mindset,
         timestamp: Date.now()
       });
 
@@ -595,8 +595,8 @@
     }
 
     function saveSettings() {
-      const risk = parseInt(document.getElementById('riskLevelSelect').value);
-      appState.riskMultiplier = risk;
+      appState.riskMultiplier = parseInt(document.getElementById('riskLevelSelect').value);
+      appState.stopLossBuyins = parseFloat(document.getElementById('stopLossInput').value) || 3;
       closeModal('settingsModal');
       updateUI();
     }
@@ -610,22 +610,22 @@
       }
     }
 
-    // COMPLETE RESET METHOD (NO RESIDUE)
     function confirmClearData() {
       if (confirm("Are you sure you want to completely clear all saved bankroll data, sessions, and active tables? This cannot be undone.")) {
         localStorage.clear();
         appState = {
           initialBankroll: 100.00,
           riskMultiplier: 25,
+          stopLossBuyins: 3,
           netCashFlows: 0.00,
           activeTables: [],
           sessionHistory: []
         };
+        stopLossDismissed = false;
         updateUI();
       }
     }
 
-    // LOCAL STORAGE PERSISTENCE
     function saveData() {
       localStorage.setItem('bankrollTrackerData_v2', JSON.stringify(appState));
     }
@@ -633,15 +633,10 @@
     function loadSavedData() {
       const raw = localStorage.getItem('bankrollTrackerData_v2');
       if (raw) {
-        try {
-          appState = JSON.parse(raw);
-        } catch (e) {
-          console.error("Failed to parse saved data");
-        }
+        try { appState = JSON.parse(raw); } catch (e) {}
       }
     }
 
-    // CHART.JS GRAPH INTEGRATION
     function initChart() {
       const ctx = document.getElementById('bankrollChart').getContext('2d');
       chartInstance = new Chart(ctx, {
