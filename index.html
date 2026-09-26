@@ -133,7 +133,7 @@
                             $0.01 / $0.02 SB/BB (NL2)
                         </h2>
                         <p id="currentStakesSubtitle" class="text-xs text-slate-400 mt-0.5">
-                            Max Table Buy-in: <span class="font-mono text-slate-200 font-bold">$4.00</span> (200 BB) &bull; Threshold: <span class="font-mono text-slate-200 font-bold">$200.00</span>
+                            Max Table Buy-in: <span class="font-mono text-slate-200 font-bold">$4.00</span> (200 BB) &bull; Threshold: <span class="font-mono text-slate-200 font-bold">$100.00</span>
                         </p>
                     </div>
                 </div>
@@ -168,9 +168,9 @@
                     <div id="tierProgressBar" class="bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-400 h-full rounded-full transition-all duration-500 shadow-md" style="width: 0%"></div>
                 </div>
                 <div class="flex justify-between text-[11px] text-slate-400 font-mono">
-                    <span id="tierMinDisplay">Floor: $200.00</span>
+                    <span id="tierMinDisplay">Floor: $100.00</span>
                     <span id="tierDeltaDisplay" class="text-emerald-400/90 font-semibold">Needed: $250.00</span>
-                    <span id="tierMaxDisplay">Target: $450.00</span>
+                    <span id="tierMaxDisplay">Target: $350.00</span>
                 </div>
             </div>
         </div>
@@ -200,7 +200,7 @@
                     <span class="text-[11px] text-slate-400 font-medium">Initial Bankroll</span>
                     <i class="fa-solid fa-pen text-[9px] text-slate-500"></i>
                 </div>
-                <p id="statInitialBankroll" class="text-lg font-extrabold text-indigo-300 mt-1 font-mono">$200.00</p>
+                <p id="statInitialBankroll" class="text-lg font-extrabold text-indigo-300 mt-1 font-mono">$100.00</p>
             </div>
             <div class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-3.5">
                 <span class="text-[11px] text-slate-400 font-medium">Net Play Profit</span>
@@ -373,7 +373,7 @@
             <form id="initialBankrollForm" onsubmit="handleInitialBankrollSubmit(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Starting Amount ($)</label>
-                    <input type="number" id="initialBankrollInput" step="0.01" min="0" required placeholder="200.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 font-mono font-bold">
+                    <input type="number" id="initialBankrollInput" step="0.01" min="0" required placeholder="100.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 font-mono font-bold">
                 </div>
 
                 <div class="pt-2 flex justify-end space-x-2">
@@ -558,7 +558,7 @@
         ];
 
         let state = {
-            initialBankroll: 200.00,
+            initialBankroll: 100.00,
             buyInMultiplier: 25, // Default 25 buy-ins requirement per level
             activeTables: [],
             completedTransactions: []
@@ -574,22 +574,22 @@
         };
 
         function loadSavedData() {
-            const saved = localStorage.getItem('poker_brm_tracker_v6');
+            const saved = localStorage.getItem('poker_brm_tracker_v7');
             if (saved) {
                 try {
                     state = JSON.parse(saved);
-                    if (state.initialBankroll === undefined) state.initialBankroll = 200.00;
+                    if (state.initialBankroll === undefined) state.initialBankroll = 100.00;
                     if (!state.buyInMultiplier || state.buyInMultiplier < 15 || state.buyInMultiplier > 35) {
                         state.buyInMultiplier = 25;
                     }
                     if (!state.activeTables) state.activeTables = [];
                     if (!state.completedTransactions) state.completedTransactions = [];
                 } catch(e) {
-                    state = { initialBankroll: 200.00, buyInMultiplier: 25, activeTables: [], completedTransactions: [] };
+                    state = { initialBankroll: 100.00, buyInMultiplier: 25, activeTables: [], completedTransactions: [] };
                 }
             } else {
                 state = {
-                    initialBankroll: 200.00,
+                    initialBankroll: 100.00,
                     buyInMultiplier: 25,
                     activeTables: [],
                     completedTransactions: []
@@ -599,7 +599,7 @@
         }
 
         function saveState() {
-            localStorage.setItem('poker_brm_tracker_v6', JSON.stringify(state));
+            localStorage.setItem('poker_brm_tracker_v7', JSON.stringify(state));
         }
 
         // FULL PURGE: Fixes lingering data bug by completely wiping localStorage and resetting state memory
@@ -1341,7 +1341,7 @@
 
         function loadDemoData() {
             state = {
-                initialBankroll: 200.00,
+                initialBankroll: 100.00,
                 buyInMultiplier: 25,
                 activeTables: [],
                 completedTransactions: [
